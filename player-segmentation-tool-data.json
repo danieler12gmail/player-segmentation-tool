@@ -1,0 +1,29 @@
+{
+  "activeGame": "marble_sort",
+  "lookbackVal": 30,
+  "binSize": 2,
+  "classPercentile": 75,
+  "segments": [
+    {
+      "id": 1,
+      "name": "Low",
+      "color": "#3b82f6",
+      "startBucket": 1,
+      "endBucket": 8
+    },
+    {
+      "id": 2,
+      "name": "Mid",
+      "color": "#10b981",
+      "startBucket": 9,
+      "endBucket": 16
+    },
+    {
+      "id": 3,
+      "name": "High",
+      "color": "#f97316",
+      "startBucket": 17,
+      "endBucket": 26
+    }
+  ]
+}
