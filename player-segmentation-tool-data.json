@@ -1,7 +1,7 @@
 {
-  "activeGame": "marble_sort",
+  "activeGame": "snacky_dash",
   "lookbackVal": 30,
-  "binSize": 2,
+  "binSize": 1,
   "classPercentile": 75,
   "segments": [
     {
