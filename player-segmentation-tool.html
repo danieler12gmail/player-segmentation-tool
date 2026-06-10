@@ -1,0 +1,1795 @@
+<html lang="en" data-theme="light"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Player Segmentation Tool — Voodoo</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+/* ── THEMES ── */
+:root,[data-theme="dark"]{
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#232635;--surface3:#2c3044;
+  --border:#2e3347;--text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+  --card-shadow:none;--table-hover:rgba(255,255,255,.025);
+}
+[data-theme="dim"]{
+  --bg:#1a1f35;--surface:#222840;--surface2:#2a3252;--surface3:#323c60;
+  --border:#3d4870;--text:#dde4f5;--text2:#8d9cc8;--text3:#5a6a99;
+  --card-shadow:none;--table-hover:rgba(255,255,255,.03);
+}
+[data-theme="light"]{
+  --bg:#f0f4f8;--surface:#ffffff;--surface2:#f1f5f9;--surface3:#e2e8f0;
+  --border:#cbd5e1;--text:#0f172a;--text2:#475569;--text3:#94a3b8;
+  --card-shadow:0 1px 4px rgba(0,0,0,.07);--table-hover:rgba(0,0,0,.025);
+}
+
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;min-height:100vh;transition:background .2s,color .2s}
+
+/* TOPBAR */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;height:52px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:200}
+.topbar-logo{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.topbar-sep{width:1px;height:28px;background:var(--border);flex-shrink:0}
+.topbar-sub{font-size:12px;color:var(--text3);flex:1}
+
+/* THEME TOGGLE */
+.theme-toggle{display:flex;gap:2px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:3px}
+.theme-btn{width:32px;height:28px;border-radius:7px;border:none;cursor:pointer;background:transparent;font-size:16px;display:flex;align-items:center;justify-content:center;transition:background .15s;flex-shrink:0}
+.theme-btn:hover{background:var(--surface3)}
+.theme-btn.active{background:var(--accent,#6366f1);box-shadow:0 1px 4px rgba(99,102,241,.3)}
+
+/* DATA SOURCE BADGE */
+.ds-badge{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface2);font-size:12px;font-weight:600;cursor:pointer;color:var(--text2);transition:all .15s;white-space:nowrap;flex-shrink:0}
+.ds-badge:hover{border-color:#6366f1;color:var(--text)}
+.ds-badge.csv-active{border-color:#10b981;color:#10b981;background:rgba(16,185,129,.1)}
+
+/* PAGE */
+.page{max-width:1800px;margin:0 auto;padding:18px 16px}
+
+/* GAME PILLS */
+.game-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.game-pill{padding:6px 16px;border-radius:999px;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.game-pill:hover{border-color:#818cf8;color:var(--text)}
+.game-pill.active{border-color:#6366f1;background:rgba(99,102,241,.18);color:#818cf8;font-weight:700}
+
+/* STATS */
+.stats-strip{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.stat-box{flex:1;min-width:100px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;text-align:center;box-shadow:var(--card-shadow)}
+.stat-box .sv{font-size:21px;font-weight:700}
+.stat-box .sl{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;box-shadow:var(--card-shadow)}
+.card-title{font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+
+/* MAIN LAYOUT */
+.main-layout{display:grid;grid-template-columns:1fr 400px;gap:16px;align-items:start}
+@media(max-width:1100px){.main-layout{grid-template-columns:1fr}}
+
+/* TABS */
+.rtab-row{display:flex;gap:4px;margin-bottom:14px;flex-wrap:wrap}
+.rtab{padding:6px 13px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);font-size:12px;font-weight:500;cursor:pointer;color:var(--text2);transition:all .15s}
+.rtab:hover{color:var(--text)}
+.rtab.active{background:rgba(99,102,241,.18);border-color:#6366f1;color:#818cf8;font-weight:700}
+
+/* REF TABLE */
+.ref-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.ref-table th{padding:6px 8px;color:var(--text3);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);white-space:nowrap;background:var(--surface2);position:sticky;top:0;z-index:1}
+.ref-table td{padding:4px 8px;border-bottom:1px solid rgba(128,128,128,.08);vertical-align:middle}
+.ref-table tr:hover td{background:var(--table-hover)}
+.sh0 td{background:rgba(59,130,246,.09)!important}.sh1 td{background:rgba(16,185,129,.09)!important}
+.sh2 td{background:rgba(249,115,22,.09)!important}.sh3 td{background:rgba(168,85,247,.09)!important}
+.sh4 td{background:rgba(236,72,153,.09)!important}.sh5 td{background:rgba(6,182,212,.09)!important}
+.sh6 td{background:rgba(245,158,11,.09)!important}
+.bar-cell{display:flex;align-items:center;gap:5px;min-width:130px}
+.bar-bg{flex:1;height:7px;background:var(--surface3);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .2s}
+.bar-pct{font-size:11px;font-weight:700;min-width:34px;text-align:right}
+
+/* SEG BUILDER */
+.seg-row{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:9px 12px;margin-bottom:8px;transition:border-color .15s}
+.seg-row:hover{border-color:#6366f1}
+.seg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.seg-lbl{font-size:10px;color:var(--text3);margin-bottom:2px;font-weight:600}
+.seg-sel{background:var(--surface3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:5px 7px;font-size:12px;font-weight:600;cursor:pointer;min-width:72px}
+.seg-sel:focus{outline:none;border-color:#6366f1}
+.seg-del{cursor:pointer;color:var(--text3);font-size:17px;padding:2px 4px;margin-left:auto;transition:color .15s;line-height:1}
+.seg-del:hover{color:#ef4444}
+
+/* HBAR */
+.hbar-wrap{display:flex;flex-direction:column;gap:16px}
+.hbar-seg{display:flex;flex-direction:column;gap:4px}
+.hbar-name{font-size:12px;font-weight:700;margin-bottom:2px}
+.hbar-metric{display:flex;align-items:center;gap:8px}
+.hbar-mlabel{font-size:11px;color:var(--text3);min-width:130px;text-align:right}
+.hbar-bg{flex:1;height:16px;background:var(--surface3);border-radius:4px;overflow:hidden;position:relative}
+.hbar-fill{height:100%;border-radius:4px;transition:width .4s}
+.hbar-val{font-size:12px;font-weight:700;min-width:44px;text-align:right}
+.grid-line{position:absolute;top:0;bottom:0;width:1px;background:rgba(128,128,128,.15)}
+
+/* RESULT TABLE */
+.rtable{width:100%;border-collapse:collapse;font-size:12.5px}
+.rtable th{padding:7px 9px;color:var(--text2);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap}
+.rtable td{padding:9px 9px;border-bottom:1px solid rgba(128,128,128,.07);vertical-align:middle}
+.rtable tr:last-child td{border-bottom:none}
+.bname{display:flex;align-items:center;gap:7px;font-weight:700}
+
+/* CHART */
+.cw{position:relative;height:260px}
+.cw-sm{position:relative;height:150px}
+.donuts-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+@media(max-width:900px){.donuts-grid{grid-template-columns:1fr}}
+
+/* CONTROLS */
+.ctrl-sel{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;color:var(--text);padding:5px 10px;font-size:12px;cursor:pointer}
+.ctrl-sel:focus{outline:none;border-color:#6366f1}
+.range-wrap{display:flex;align-items:center;gap:8px}
+.range-wrap input[type=range]{accent-color:#6366f1;width:110px}
+.range-val{font-size:13px;font-weight:700;color:#818cf8;min-width:34px}
+
+/* BTN */
+.btn{padding:7px 14px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-primary{background:#6366f1;color:white}.btn-primary:hover{background:#5254cc}
+.btn-ghost{background:rgba(99,102,241,.1);color:#818cf8;border:1.5px solid rgba(99,102,241,.3)}.btn-ghost:hover{background:rgba(99,102,241,.2)}
+.btn-secondary{background:var(--surface3);color:var(--text);border:1px solid var(--border)}.btn-secondary:hover{background:var(--surface2)}
+.fi{padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;width:100%;box-sizing:border-box;background:var(--surface2);color:var(--text)}
+.btn-add{background:rgba(99,102,241,.08);color:#818cf8;border:1.5px dashed rgba(99,102,241,.3);width:100%;justify-content:center;border-radius:10px;padding:8px;font-size:13px}
+.btn-add:hover{background:rgba(99,102,241,.18)}
+
+/* PERC */
+.perc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.perc-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center}
+.perc-label{font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.perc-val{font-size:19px;font-weight:700}
+
+/* LEGEND */
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)}
+.legend-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+
+/* USER TABLE */
+.utab{width:100%;border-collapse:collapse;font-size:12px}
+.utab th{padding:6px 8px;color:var(--text3);font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border);white-space:nowrap}
+.utab td{padding:6px 8px;border-bottom:1px solid rgba(128,128,128,.06)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:680px;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border)}
+.modal-body{padding:20px}
+.modal-close{cursor:pointer;font-size:20px;color:var(--text3);background:none;border:none;line-height:1;transition:color .15s}
+.modal-close:hover{color:var(--text)}
+
+/* DS MODAL TABS */
+.ds-tab-row{display:flex;gap:4px;margin-bottom:18px;background:var(--surface2);border-radius:10px;padding:4px}
+.ds-tab{flex:1;padding:8px;border-radius:8px;border:none;background:transparent;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;text-align:center}
+.ds-tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.15)}
+
+/* DROP ZONE */
+.drop-zone{border:2px dashed var(--border);border-radius:12px;padding:36px;text-align:center;cursor:pointer;transition:all .15s}
+.drop-zone:hover,.drop-zone.drag-over{border-color:#6366f1;background:rgba(99,102,241,.06)}
+.drop-zone input{display:none}
+
+/* GAME PARAM TABLE */
+.param-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.param-table th{padding:6px 8px;color:var(--text3);font-size:11px;font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--border);text-align:left}
+.param-table td{padding:6px 8px;border-bottom:1px solid rgba(128,128,128,.07)}
+.param-input{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:4px 8px;font-size:12px;width:80px;text-align:right}
+.param-input:focus{outline:none;border-color:#6366f1}
+
+/* SEGMENT MARKER */
+.sm{width:3px;padding:0!important}
+.sm-fill{width:3px;height:26px;border-radius:2px}
+</style>
+</head>
+<body>
+<!-- ── GITHUB PANEL ── -->
+<div id="git-panel" style="display: flex; position: fixed; top: 48px; right: 0px; width: 340px; background: var(--surface); border-top-color: ; border-top-style: ; border-top-width: ; border-right-color: ; border-right-style: ; border-right-width: ; border-bottom-color: ; border-bottom-style: ; border-bottom-width: ; border-image-source: ; border-image-slice: ; border-image-width: ; border-image-outset: ; border-image-repeat: ; border-left-width: medium; border-left-style: none; border-left-color: currentcolor; border-radius: 0px 0px 0px 12px; box-shadow: rgba(0, 0, 0, 0.15) -4px 8px 24px; z-index: 200; padding: 18px; flex-direction: column; gap: 10px;">
+  <div style="display:flex;align-items:center;gap:8px">
+    <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+        0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
+        -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66
+        .07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15
+        -.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27
+        .68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12
+        .51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48
+        0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+    </svg>
+    <span style="font-weight:700;font-size:14px">GitHub Sync</span>
+    <button onclick="showGitPanel()" style="margin-left:auto;background:none;border:none;font-size:18px;cursor:pointer;
+             color:var(--text2);line-height:1">✕</button>
+  </div>
+  <div style="font-size:11px;color:var(--text2);line-height:1.4">
+    Saves <b>player-segmentation-tool.html</b> + <b>player-segmentation-tool-data.json</b> to GitHub on every push.
+    <a href="https://github.com/settings/tokens/new?scopes=repo&amp;description=Player+Segmentation+Tool" target="_blank" style="color:var(--accent)">Create a PAT token ↗</a>
+  </div>
+  <div style="display:flex;gap:6px">
+    <input id="gh-token" type="password" placeholder="ghp_… Personal Access Token" class="fi" style="flex:1;font-size:12px">
+    <button class="btn btn-sm btn-ghost" onclick="ghVerifyToken()" style="white-space:nowrap">Verify</button>
+  </div>
+  <div style="display:flex;gap:6px">
+    <input id="gh-repo" placeholder="repo-name" class="fi" style="flex:1;font-size:12px">
+    <button class="btn btn-sm btn-secondary" onclick="ghCreateRepo()" style="white-space:nowrap" title="Create new repo on GitHub">Create</button>
+  </div>
+  <input id="gh-commit-msg" placeholder="Label (optional — e.g. 'v2 update')" class="fi" style="font-size:12px">
+  <div id="gh-status" style="font-size: 12px; min-height: 16px; line-height: 1.4; color: rgb(100, 116, 139);">⏳ Pushing…</div>
+  <div style="border-top:1px solid var(--border);padding-top:10px;display:flex;gap:8px;align-items:center">
+    <button class="btn btn-primary" style="flex:1" onclick="ghPush()">⬆ Push to GitHub</button>
+  </div>
+  <div id="git-last-push" style="font-size:10px;color:var(--text2);text-align:center;min-height:14px"></div>
+  <div id="git-auto-status" style="font-size:10px;color:var(--text2);text-align:center;min-height:12px">🔄 Auto-push: on (30 min · on change)</div>
+</div>
+
+<!-- DATA SOURCE MODAL -->
+<div class="modal-overlay" id="dsModal" style="display:none" onclick="if(event.target===this)closeDsModal()">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div style="font-size:15px;font-weight:700">🗃️ Data Source</div>
+      <button class="modal-close" onclick="closeDsModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="ds-tab-row">
+        <button class="ds-tab active" id="dst-synthetic" onclick="switchDsTab('synthetic')">📊 Real Data (30-day)</button>
+        <button class="ds-tab" id="dst-csv" onclick="switchDsTab('csv')">📂 Upload CSV</button>
+      </div>
+
+      <!-- SYNTHETIC TAB -->
+      <div id="dsp-synthetic">
+        <div style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:12px 14px;margin-bottom:14px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span style="font-size:14px">📊</span>
+            <span style="font-size:13px;font-weight:700;color:#e2e8f0">Pre-loaded Real Data</span>
+            <span id="modalDataDate" style="font-size:10px;background:#334155;border-radius:10px;padding:2px 8px;color:#94a3b8;margin-left:auto">Last updated: Jun 9, 2026</span>
+          </div>
+          <div style="font-size:12px;color:#94a3b8;line-height:1.6">
+            Data is <b style="color:#e2e8f0">pre-loaded once</b> from Voodoo DataWhisper — no queries run during your session.
+            Source: <code style="background:#0f172a;padding:1px 5px;border-radius:3px;font-size:10px;color:#818cf8">gc_fct1_iap_event_enriched_v1</code> · 30-day window.
+            Adjust parameters below for "what-if" scenarios, or ask Claude to run a fresh DataWhisper query to update the data.
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="param-table">
+            <thead><tr>
+              <th>Game</th><th style="text-align:right">DAU</th><th style="text-align:right">Conv%</th>
+              <th style="text-align:right">Avg price $</th><th style="text-align:right">Avg txns/payer</th><th style="text-align:right">ARPPU $</th>
+            </tr></thead>
+            <tbody id="paramBody"></tbody>
+          </table>
+        </div>
+        <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <button class="btn btn-primary" onclick="applyParams()">✓ Apply Parameters</button>
+          <button class="btn btn-ghost" onclick="resetParams()">↺ Reset Defaults</button>
+          <span style="font-size:11px;color:var(--text3);margin-left:auto">Simulation capped at 3,000 sample payers for performance · stats scaled to real population</span>
+        </div>
+      </div>
+
+      <!-- CSV TAB -->
+      <div id="dsp-csv" style="display:none">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.7">
+          Upload a CSV file with real transaction data. Two formats supported:<br>
+          <b style="color:var(--text)">Per-transaction:</b> <code style="background:var(--surface2);padding:1px 6px;border-radius:4px;font-size:11px">user_id, amount</code> — one row per purchase<br>
+          <b style="color:var(--text)">Per-user:</b> <code style="background:var(--surface2);padding:1px 6px;border-radius:4px;font-size:11px">user_id, total_spend, purchase_count</code>
+        </div>
+
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('csvFile').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="onDrop(event)">
+          <input type="file" id="csvFile" accept=".csv,.txt" onchange="onFileSelect(event)">
+          <div style="font-size:32px;margin-bottom:10px">📂</div>
+          <div style="font-weight:600;margin-bottom:4px">Drop CSV file here or click to browse</div>
+          <div style="font-size:12px;color:var(--text3)">Accepts .csv · max 10MB</div>
+        </div>
+
+        <div id="csvPreview" style="display:none;margin-top:16px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+            <div id="csvStatus" style="font-size:13px;font-weight:600"></div>
+            <button class="btn btn-ghost" style="font-size:12px;padding:4px 10px;margin-left:auto" onclick="clearCsv()">✕ Clear</button>
+          </div>
+          <div style="background:var(--surface2);border-radius:8px;padding:12px;font-size:12px;color:var(--text2);overflow-x:auto" id="csvPreviewTable"></div>
+        </div>
+
+        <div style="margin-top:16px;display:flex;gap:8px">
+          <button class="btn btn-primary" id="csvApplyBtn" onclick="applyCsvData()" style="display:none">✓ Use This Data</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-logo">📊 Player Segmentation</div>
+  <div class="topbar-sep"></div>
+  <div class="topbar-sub" id="topbarSub">Voodoo Puzzle Games · Spend-Based Segmentation</div>
+
+  <!-- DATA SOURCE BUTTON -->
+  <button class="ds-badge" id="dsBadge" onclick="openDsModal()">
+    <span id="dsIcon">📊</span> <span id="dsLabel">Real Data</span>
+    <span id="dsDateLabel" style="font-size:9px;opacity:.65;margin-left:4px;font-weight:500">Jun 9, 2026</span>
+  </button>
+
+  <!-- THEME TOGGLE -->
+  <div class="theme-toggle">
+    <button class="theme-btn" id="tbtn-dark" title="Dark" onclick="setTheme('dark')">🌑</button>
+    <button class="theme-btn" id="tbtn-dim" title="Dim" onclick="setTheme('dim')">🌓</button>
+    <button class="theme-btn active" id="tbtn-light" title="Bright" onclick="setTheme('light')">☀️</button>
+  </div>
+  <!-- ── GITHUB SYNC BUTTONS ── -->
+  <button id="quick-save-btn" onclick="quickGitSave()" title="Save &amp; push to GitHub" style="background:rgba(16,185,129,.2);border:1px solid rgba(16,185,129,.4);color:#6ee7b7;
+           padding:6px 11px;cursor:pointer;font-size:12px;font-weight:700;border-radius:8px;
+           display:flex;align-items:center;gap:4px;white-space:nowrap;transition:all .15s">
+    <span id="quick-save-icon">⬆</span> Save
+  </button>
+  <button onclick="showGitPanel()" title="GitHub sync settings" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:white;
+           padding:6px 10px;cursor:pointer;font-size:12px;font-weight:700;border-radius:8px;
+           display:flex;align-items:center;gap:5px;white-space:nowrap">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="white">
+      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+        0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
+        -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66
+        .07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15
+        -.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27
+        .68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12
+        .51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48
+        0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+    </svg>
+    <span id="git-btn-label">danieler12gmail</span>
+  </button>
+  <span id="git-push-badge" style="display:none;font-size:9px;background:#10b981;color:white;
+           padding:1px 5px;border-radius:8px;margin-left:-4px">✓ pushed</span>
+</div>
+
+<div class="page">
+  <div class="game-pills" id="gamePills"><div class="game-pill active" onclick="switchGame('marble_sort')">🔵 Marble Sort</div><div class="game-pill" onclick="switchGame('sand_loop')">⏳ Sand Loop</div><div class="game-pill" onclick="switchGame('loop_sort')">🔄 Loop Sort</div><div class="game-pill" onclick="switchGame('beads_out')">📿 Beads Out</div><div class="game-pill" onclick="switchGame('bounce_blast')">🏀 Bounce Blast</div><div class="game-pill" onclick="switchGame('snacky_dash')">🍕 Snacky Dash</div></div>
+  <div class="stats-strip" id="statsStrip">
+    <div class="stat-box"><div class="sv">1.7M</div><div class="sl">DAU</div></div>
+    <div class="stat-box"><div class="sv">132.5K</div><div class="sl">Paying Users</div></div>
+    <div class="stat-box"><div class="sv">1.5%</div><div class="sl">Conversion</div></div>
+    <div class="stat-box"><div class="sv">$1.04</div><div class="sl">ARPU</div></div>
+    <div class="stat-box"><div class="sv">$70.49</div><div class="sl">ARPPU</div></div>
+    <div class="stat-box"><div class="sv">$9.3M</div><div class="sl">Revenue</div></div>
+    <div class="stat-box"><div class="sv">1.3M</div><div class="sl">Transactions</div></div></div>
+
+  <div class="main-layout">
+
+    <!-- LEFT COLUMN -->
+    <div style="display:flex;flex-direction:column;gap:14px">
+
+      <!-- REF TABLE -->
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+          <div class="card-title" style="margin-bottom:0">📊 Spend Distribution — Payers Only</div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="font-size:12px;color:var(--text2);font-weight:600">Classify by:</span>
+            <select class="ctrl-sel" id="classPercentileSel" onchange="onParamChange()" title="Each payer is placed in a bucket based on this percentile of their own purchase prices">
+              <option value="25">P25 (low buyer)</option>
+              <option value="50">P50 (median)</option>
+              <option value="75" selected="">P75 (high buyer)</option>
+              <option value="90">P90 (top buyer)</option>
+            </select>
+            <span style="font-size:12px;color:var(--text2);font-weight:600;margin-left:6px">Bin size:</span>
+            <select class="ctrl-sel" id="binSize" onchange="onParamChange()">
+              <option value="1">$1</option><option value="2" selected="">$2</option>
+              <option value="5">$5</option><option value="10">$10</option>
+            </select>
+            <span style="font-size:12px;color:var(--text2);font-weight:600;margin-left:6px">Lookback:</span>
+            <select class="ctrl-sel" id="lookbackMode" onchange="onParamChange()">
+              <option value="days">Days</option><option value="payments">Payments</option>
+            </select>
+            <div class="range-wrap">
+              <input type="range" id="lookbackVal" min="7" max="180" value="30" oninput="onParamChange()">
+              <div class="range-val" id="lookbackDisplay">30</div>
+            </div>
+          </div>
+        </div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>% of Paying DAU</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div>% of Revenue</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div>% of Transactions</div>
+        </div>
+        <div style="overflow-y:auto;max-height:540px;border:1px solid var(--border);border-radius:8px">
+          <table class="ref-table" id="refTable">
+            <thead><tr>
+              <th style="width:3px;padding:0"></th>
+              <th style="text-align:left">Bucket #</th>
+              <th style="text-align:right">Payers</th>
+              <th style="min-width:160px">% of PDAU</th>
+              <th style="min-width:160px">% of Revenue</th>
+              <th style="min-width:160px">% of Transactions</th>
+            </tr></thead>
+            <tbody id="refBody"><tr class="sh0"><td class="sm"><div class="sm-fill" style="background:#3b82f6"></div></td>
+      <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#1 $0–2</td>
+      <td style="text-align:right;font-size:12px;font-weight:600">2,063</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:3.5023683004261246%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">2%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:36.60379022202483%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">10%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:100%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">35%</div></div></td></tr><tr class="sh0"><td class="sm"><div class="sm-fill" style="background:#3b82f6"></div></td>
+      <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#2 $2–4</td>
+      <td style="text-align:right;font-size:12px;font-weight:600">4,313</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:7.322207697400812%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">3%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:10.049907012308301%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">3%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:18.192119203422%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">6%</div></div></td></tr><tr class="sh0"><td class="sm"><div class="sm-fill" style="background:#3b82f6"></div></td>
+      <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#3 $4–6</td>
+      <td style="text-align:right;font-size:12px;font-weight:600">13,234</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:22.46744647980578%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">10%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:35.53662003629187%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">9%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:38.54499654618632%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">13%</div></div></td></tr><tr class="sh0"><td class="sm"><div class="sm-fill" style="background:#3b82f6"></div></td>
+      <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#4 $6–8</td>
+      <td style="text-align:right;font-size:12px;font-weight:600">58,903</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:100%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">44%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:100%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">27%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:67.74007273709832%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">24%</div></div></td></tr><tr class="sh0"><td class="sm"><div class="sm-fill" style="background:#3b82f6"></div></td>
+      <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#5 $8–10</td>
+      <td style="text-align:right;font-size:12px;font-weight:600">38,981</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:66.17829312598678%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">29%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:61.16545721692606%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">16%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:33.1385251670796%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">12%</div></div></td></tr><tr class="sh0"><td class="sm"><div class="sm-fill" style="background:#3b82f6"></div></td>
+      <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#6 $10–12</td>
+      <td style="text-align:right;font-size:12px;font-weight:600">3,470</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:5.891041203334296%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">3%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh0"><td class="sm"><div class="sm-fill" style="background:#3b82f6"></div></td>
+      <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#7 $12–14</td>
+      <td style="text-align:right;font-size:12px;font-weight:600">4,343</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:7.373138889360474%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">3%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh0"><td class="sm"><div class="sm-fill" style="background:#3b82f6"></div></td>
+      <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#8 $14–16</td>
+      <td style="text-align:right;font-size:12px;font-weight:600">3,218</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:5.46321919087313%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">2%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:34.278319626948424%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">9%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:12.37685574389917%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">4%</div></div></td></tr><tr class="sh1"><td class="sm"><div class="sm-fill" style="background:#10b981"></div></td>
+      <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#9 $16–18</td>
+      <td style="text-align:right;font-size:12px;font-weight:600">1,281</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:2.1747618966775883%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">1%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh1"><td class="sm"><div class="sm-fill" style="background:#10b981"></div></td>
+      <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#10 $18–20</td>
+      <td style="text-align:right;font-size:12px;font-weight:600">1,480</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:2.5126054700100164%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">1%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:33.98686270379521%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">9%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:9.202179933887251%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">3%</div></div></td></tr><tr class="sh1"><td class="sm"><div class="sm-fill" style="background:#10b981"></div></td>
+      <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#11 $20–22</td>
+      <td style="text-align:right;font-size:12px;font-weight:600">54</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.09167614552739249%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh1"><td class="sm"><div class="sm-fill" style="background:#10b981"></div></td>
+      <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#12 $22–24</td>
+      <td style="text-align:right;font-size:12px;font-weight:600">354</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.6009880651240175%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh1"><td class="sm"><div class="sm-fill" style="background:#10b981"></div></td>
+      <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#13 $24–26</td>
+      <td style="text-align:right;font-size:12px;font-weight:600">211</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.35821605011629293%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh1"><td class="sm"><div class="sm-fill" style="background:#10b981"></div></td>
+      <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#14 $26–28</td>
+      <td style="text-align:right;font-size:12px;font-weight:600">94</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.1595844014736092%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh1"><td class="sm"><div class="sm-fill" style="background:#10b981"></div></td>
+      <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#15 $28–30</td>
+      <td style="text-align:right;font-size:12px;font-weight:600">224</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.3802862332988133%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:38.242199969862774%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">10%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:6.901743903528555%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">2%</div></div></td></tr><tr class="sh1"><td class="sm"><div class="sm-fill" style="background:#10b981"></div></td>
+      <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#16 $30–32</td>
+      <td style="text-align:right;font-size:12px;font-weight:600">47</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.0797922007368046%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh2"><td class="sm"><div class="sm-fill" style="background:#f97316"></div></td>
+      <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#17 $32–34</td>
+      <td style="text-align:right;font-size:12px;font-weight:600">68</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.11544403510856832%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh2"><td class="sm"><div class="sm-fill" style="background:#f97316"></div></td>
+      <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#18 $34–36</td>
+      <td style="text-align:right;font-size:12px;font-weight:600">17</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.02886100877714208%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh2"><td class="sm"><div class="sm-fill" style="background:#f97316"></div></td>
+      <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#19 $36–38</td>
+      <td style="text-align:right;font-size:12px;font-weight:600">41</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.06960596234487208%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh2"><td class="sm"><div class="sm-fill" style="background:#f97316"></div></td>
+      <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#20 $38–40</td>
+      <td style="text-align:right;font-size:12px;font-weight:600">13</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.022070183182520416%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh2"><td class="sm"><div class="sm-fill" style="background:#f97316"></div></td>
+      <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#21 $40–42</td>
+      <td style="text-align:right;font-size:12px;font-weight:600">0</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh2"><td class="sm"><div class="sm-fill" style="background:#f97316"></div></td>
+      <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#22 $42–44</td>
+      <td style="text-align:right;font-size:12px;font-weight:600">0</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh2"><td class="sm"><div class="sm-fill" style="background:#f97316"></div></td>
+      <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#23 $44–46</td>
+      <td style="text-align:right;font-size:12px;font-weight:600">21</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.035651834371763745%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh2"><td class="sm"><div class="sm-fill" style="background:#f97316"></div></td>
+      <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#24 $46–48</td>
+      <td style="text-align:right;font-size:12px;font-weight:600">29</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.04923348556100708%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh2"><td class="sm"><div class="sm-fill" style="background:#f97316"></div></td>
+      <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#25 $48–50</td>
+      <td style="text-align:right;font-size:12px;font-weight:600">8</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.013581651189243331%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh2"><td class="sm"><div class="sm-fill" style="background:#f97316"></div></td>
+      <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#26 $50+</td>
+      <td style="text-align:right;font-size:12px;font-weight:600">55</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.0933738519260479%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:26.238789856554952%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">7%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:1.9975463758925984%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">1%</div></div></td></tr></tbody>
+          </table>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:8px" id="refHint">Bucketed by each user's P75 purchase price · ~132.5K payers · 26 buckets (cap $50+) · Voodoo DataWhisper (30d)</div>
+      </div>
+
+      <!-- RESULTS TABS -->
+      <div>
+        <div class="rtab-row">
+          <div class="rtab active" onclick="switchTab('dist',this)">📋 Distribution</div>
+          <div class="rtab" onclick="switchTab('charts',this)">📈 Charts</div>
+          <div class="rtab" onclick="switchTab('users',this)">👤 User Sample</div>
+          <div class="rtab" onclick="switchTab('compare',this)">⚖️ Game Compare</div>
+        </div>
+
+        <!-- GENERATION PROGRESS BAR (hidden by default) -->
+        <div id="genProgress" style="margin-bottom: 12px; display: none;">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <span id="genProgressLabel" style="font-size:12px;font-weight:700;color:var(--text)">⚙️ Simulating 132.5K / 132.5K payers…</span>
+              <span id="genProgressPct" style="font-size:12px;font-weight:700;color:#818cf8">100%</span>
+            </div>
+            <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+              <div id="genProgressBar" style="height: 100%; width: 100%; background: linear-gradient(90deg, rgb(99, 102, 241), rgb(129, 140, 248)); border-radius: 3px; transition: width 0.1s;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-dist">
+          <div class="card">
+            <div class="card-title">🎯 Segment Results</div>
+            <div class="legend" style="margin-bottom:14px">
+              <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>% of IAP</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>% of PDAU</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>% of Transactions</div>
+            </div>
+            <div class="hbar-wrap" id="hbarWrap"><div class="hbar-seg"><div class="hbar-name" style="color:#3b82f6">Low <span style="font-weight:400;color:var(--text3);font-size:11px">$0–$16 · #1–#8</span></div>
+      <div class="hbar-metric"><div class="hbar-mlabel">% of IAP</div>
+  <div class="hbar-bg"><div class="hbar-fill" style="width:73.81883997114642%;background:#3b82f6"></div>
+    <div class="grid-line" style="left:25%"></div><div class="grid-line" style="left:50%"></div><div class="grid-line" style="left:75%"></div></div>
+  <div class="hbar-val" style="color:#3b82f6">73.8%</div></div><div class="hbar-metric"><div class="hbar-mlabel">% of PDAU</div>
+  <div class="hbar-bg"><div class="hbar-fill" style="width:96.98389701332609%;background:#ef4444"></div>
+    <div class="grid-line" style="left:25%"></div><div class="grid-line" style="left:50%"></div><div class="grid-line" style="left:75%"></div></div>
+  <div class="hbar-val" style="color:#ef4444">97.0%</div></div><div class="hbar-metric"><div class="hbar-mlabel">% of Transactions</div>
+  <div class="hbar-bg"><div class="hbar-fill" style="width:93.71681891171704%;background:#f59e0b"></div>
+    <div class="grid-line" style="left:25%"></div><div class="grid-line" style="left:50%"></div><div class="grid-line" style="left:75%"></div></div>
+  <div class="hbar-val" style="color:#f59e0b">93.7%</div></div></div><div class="hbar-seg"><div class="hbar-name" style="color:#10b981">Mid <span style="font-weight:400;color:var(--text3);font-size:11px">$16–$32 · #9–#16</span></div>
+      <div class="hbar-metric"><div class="hbar-mlabel">% of IAP</div>
+  <div class="hbar-bg"><div class="hbar-fill" style="width:19.204650047152803%;background:#3b82f6"></div>
+    <div class="grid-line" style="left:25%"></div><div class="grid-line" style="left:50%"></div><div class="grid-line" style="left:75%"></div></div>
+  <div class="hbar-val" style="color:#3b82f6">19.2%</div></div><div class="hbar-metric"><div class="hbar-mlabel">% of PDAU</div>
+  <div class="hbar-bg"><div class="hbar-fill" style="width:2.825945880683962%;background:#ef4444"></div>
+    <div class="grid-line" style="left:25%"></div><div class="grid-line" style="left:50%"></div><div class="grid-line" style="left:75%"></div></div>
+  <div class="hbar-val" style="color:#ef4444">2.8%</div></div><div class="hbar-metric"><div class="hbar-mlabel">% of Transactions</div>
+  <div class="hbar-bg"><div class="hbar-fill" style="width:5.5898149990053705%;background:#f59e0b"></div>
+    <div class="grid-line" style="left:25%"></div><div class="grid-line" style="left:50%"></div><div class="grid-line" style="left:75%"></div></div>
+  <div class="hbar-val" style="color:#f59e0b">5.6%</div></div></div><div class="hbar-seg"><div class="hbar-name" style="color:#f97316">High <span style="font-weight:400;color:var(--text3);font-size:11px">$32–∞ · #17–#26</span></div>
+      <div class="hbar-metric"><div class="hbar-mlabel">% of IAP</div>
+  <div class="hbar-bg"><div class="hbar-fill" style="width:6.976509983698207%;background:#3b82f6"></div>
+    <div class="grid-line" style="left:25%"></div><div class="grid-line" style="left:50%"></div><div class="grid-line" style="left:75%"></div></div>
+  <div class="hbar-val" style="color:#3b82f6">7.0%</div></div><div class="hbar-metric"><div class="hbar-mlabel">% of PDAU</div>
+  <div class="hbar-bg"><div class="hbar-fill" style="width:0.19015710598994884%;background:#ef4444"></div>
+    <div class="grid-line" style="left:25%"></div><div class="grid-line" style="left:50%"></div><div class="grid-line" style="left:75%"></div></div>
+  <div class="hbar-val" style="color:#ef4444">0.2%</div></div><div class="hbar-metric"><div class="hbar-mlabel">% of Transactions</div>
+  <div class="hbar-bg"><div class="hbar-fill" style="width:0.6933660892775968%;background:#f59e0b"></div>
+    <div class="grid-line" style="left:25%"></div><div class="grid-line" style="left:50%"></div><div class="grid-line" style="left:75%"></div></div>
+  <div class="hbar-val" style="color:#f59e0b">0.7%</div></div></div></div>
+            <table class="rtable" style="margin-top:18px">
+              <thead><tr>
+                <th>Segment</th><th>Range</th><th>Payers</th>
+                <th style="color:#3b82f6">% IAP</th>
+                <th style="color:#ef4444">% PDAU</th>
+                <th style="color:#f59e0b">% Txns</th>
+                <th>Avg $</th><th>Avg Txns</th>
+              </tr></thead>
+              <tbody id="resultBody"><tr><td><div class="bname"><div style="width:8px;height:8px;border-radius:50%;background:#3b82f6"></div>Low</div></td>
+      <td style="font-size:11px;color:var(--text2)">$0–$16</td>
+      <td style="font-weight:600">128,525</td>
+      <td style="font-weight:700;color:#3b82f6">73.8%</td>
+      <td style="font-weight:700;color:#ef4444">97.0%</td>
+      <td style="font-weight:700;color:#f59e0b">93.7%</td>
+      <td style="color:var(--text2)">$69.94</td>
+      <td style="color:var(--text2)">10.1</td></tr><tr><td><div class="bname"><div style="width:8px;height:8px;border-radius:50%;background:#10b981"></div>Mid</div></td>
+      <td style="font-size:11px;color:var(--text2)">$16–$32</td>
+      <td style="font-weight:600">3,745</td>
+      <td style="font-weight:700;color:#3b82f6">19.2%</td>
+      <td style="font-weight:700;color:#ef4444">2.8%</td>
+      <td style="font-weight:700;color:#f59e0b">5.6%</td>
+      <td style="color:var(--text2)">$86.65</td>
+      <td style="color:var(--text2)">6.2</td></tr><tr><td><div class="bname"><div style="width:8px;height:8px;border-radius:50%;background:#f97316"></div>High</div></td>
+      <td style="font-size:11px;color:var(--text2)">$32–∞</td>
+      <td style="font-weight:600">252</td>
+      <td style="font-weight:700;color:#3b82f6">7.0%</td>
+      <td style="font-weight:700;color:#ef4444">0.2%</td>
+      <td style="font-weight:700;color:#f59e0b">0.7%</td>
+      <td style="color:var(--text2)">$110.71</td>
+      <td style="color:var(--text2)">3.7</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="tab-charts" style="display:none">
+          <div class="donuts-grid">
+            <div class="card"><div class="card-title">👥 DAU % by Segment</div><div class="cw"><canvas id="dauChart" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas></div></div>
+            <div class="card"><div class="card-title">💰 Revenue % by Segment</div><div class="cw"><canvas id="revChart" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas></div></div>
+            <div class="card"><div class="card-title">🛒 Transactions %</div><div class="cw"><canvas id="txnChart" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas></div></div>
+          </div>
+          <div class="card" style="margin-top:14px">
+            <div class="card-title">📊 All Metrics Compared</div>
+            <div style="height:300px;position:relative"><canvas id="barChart" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas></div>
+          </div>
+        </div>
+
+        <div id="tab-users" style="display:none">
+          <div class="card">
+            <div class="card-title">🔍 User Sample — Top 8 per Segment</div>
+            <div style="overflow-x:auto">
+              <table class="utab">
+                <thead><tr>
+                  <th>User ID</th><th>Segment</th><th>Total Spend</th><th>Purchases</th><th>Avg Price</th><th>Days Active</th>
+                </tr></thead>
+                <tbody id="userBody"><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U201F03</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#3b82f6"></div>Low</div></td>
+        <td style="font-weight:600">$30.94</td>
+        <td>6</td>
+        <td>$5.16</td>
+        <td>2d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U8DBD78</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#3b82f6"></div>Low</div></td>
+        <td style="font-weight:600">$44.94</td>
+        <td>6</td>
+        <td>$7.49</td>
+        <td>15d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U73C43F</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#3b82f6"></div>Low</div></td>
+        <td style="font-weight:600">$124.83</td>
+        <td>17</td>
+        <td>$7.34</td>
+        <td>6d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U5B779C</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#3b82f6"></div>Low</div></td>
+        <td style="font-weight:600">$41.92</td>
+        <td>8</td>
+        <td>$5.24</td>
+        <td>8d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U81F853</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#3b82f6"></div>Low</div></td>
+        <td style="font-weight:600">$28.93</td>
+        <td>7</td>
+        <td>$4.13</td>
+        <td>22d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U2532C3</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#3b82f6"></div>Low</div></td>
+        <td style="font-weight:600">$103.80</td>
+        <td>20</td>
+        <td>$5.19</td>
+        <td>3d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U370623</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#3b82f6"></div>Low</div></td>
+        <td style="font-weight:600">$23.97</td>
+        <td>3</td>
+        <td>$7.99</td>
+        <td>23d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U5D6DB9</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#3b82f6"></div>Low</div></td>
+        <td style="font-weight:600">$23.94</td>
+        <td>6</td>
+        <td>$3.99</td>
+        <td>23d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U3871B0</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>Mid</div></td>
+        <td style="font-weight:600">$222.91</td>
+        <td>9</td>
+        <td>$24.77</td>
+        <td>20d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U67352E</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>Mid</div></td>
+        <td style="font-weight:600">$132.94</td>
+        <td>6</td>
+        <td>$22.16</td>
+        <td>15d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U3129DE</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>Mid</div></td>
+        <td style="font-weight:600">$128.88</td>
+        <td>12</td>
+        <td>$10.74</td>
+        <td>17d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U8E8FFD</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>Mid</div></td>
+        <td style="font-weight:600">$31.98</td>
+        <td>2</td>
+        <td>$15.99</td>
+        <td>24d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U2FB091</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>Mid</div></td>
+        <td style="font-weight:600">$74.92</td>
+        <td>8</td>
+        <td>$9.37</td>
+        <td>2d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U1AF459</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>Mid</div></td>
+        <td style="font-weight:600">$162.88</td>
+        <td>12</td>
+        <td>$13.57</td>
+        <td>13d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U13319A</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>Mid</div></td>
+        <td style="font-weight:600">$88.93</td>
+        <td>7</td>
+        <td>$12.70</td>
+        <td>24d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U642699</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>Mid</div></td>
+        <td style="font-weight:600">$147.87</td>
+        <td>13</td>
+        <td>$11.37</td>
+        <td>8d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U4D274A</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#f97316"></div>High</div></td>
+        <td style="font-weight:600">$111.97</td>
+        <td>3</td>
+        <td>$37.32</td>
+        <td>4d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U38C8A1</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#f97316"></div>High</div></td>
+        <td style="font-weight:600">$132.96</td>
+        <td>4</td>
+        <td>$33.24</td>
+        <td>9d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U8BA1C6</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#f97316"></div>High</div></td>
+        <td style="font-weight:600">$66.97</td>
+        <td>3</td>
+        <td>$22.32</td>
+        <td>8d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U233B47</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#f97316"></div>High</div></td>
+        <td style="font-weight:600">$84.97</td>
+        <td>3</td>
+        <td>$28.32</td>
+        <td>22d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U669C39</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#f97316"></div>High</div></td>
+        <td style="font-weight:600">$69.97</td>
+        <td>3</td>
+        <td>$23.32</td>
+        <td>1d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U8DFD08</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#f97316"></div>High</div></td>
+        <td style="font-weight:600">$109.97</td>
+        <td>3</td>
+        <td>$36.66</td>
+        <td>22d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U6E0A4C</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#f97316"></div>High</div></td>
+        <td style="font-weight:600">$181.94</td>
+        <td>6</td>
+        <td>$30.32</td>
+        <td>21d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U3B80FE</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#f97316"></div>High</div></td>
+        <td style="font-weight:600">$184.94</td>
+        <td>6</td>
+        <td>$30.82</td>
+        <td>12d</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-compare" style="display:none">
+          <div class="card">
+            <div class="card-title">⚖️ Cross-Game ARPPU &amp; Conversion</div>
+            <div style="height:300px;position:relative"><canvas id="compareChart" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas></div>
+          </div>
+          <div class="card" style="margin-top:14px">
+            <div class="card-title">📊 KPI Summary — All Games</div>
+            <table class="rtable">
+              <thead><tr>
+                <th>Game</th><th>DAU</th><th>Payers</th><th>Conv%</th><th>ARPU</th><th>ARPPU</th><th>P50</th><th>P75</th><th>P90</th>
+              </tr></thead>
+              <tbody id="compareBody"><tr><td style="font-weight:700;color:#6366f1">🔵 Marble Sort</td>
+      <td>1.7M</td><td>132.5K</td>
+      <td>1.5%</td>
+      <td>$1.03</td>
+      <td>$70.12</td>
+      <td>$55</td>
+      <td>$90</td>
+      <td>$135</td></tr><tr><td style="font-weight:400;color:var(--text)">⏳ Sand Loop</td>
+      <td>373.5K</td><td>76.8K</td>
+      <td>3.8%</td>
+      <td>$1.75</td>
+      <td>$46.03</td>
+      <td>$37</td>
+      <td>$59</td>
+      <td>$90</td></tr><tr><td style="font-weight:400;color:var(--text)">🔄 Loop Sort</td>
+      <td>273.1K</td><td>46.6K</td>
+      <td>3.2%</td>
+      <td>$1.55</td>
+      <td>$48.89</td>
+      <td>$40</td>
+      <td>$64</td>
+      <td>$96</td></tr><tr><td style="font-weight:400;color:var(--text)">📿 Beads Out</td>
+      <td>363.7K</td><td>38.7K</td>
+      <td>2.0%</td>
+      <td>$1.11</td>
+      <td>$56.33</td>
+      <td>$47</td>
+      <td>$72</td>
+      <td>$104</td></tr><tr><td style="font-weight:400;color:var(--text)">🏀 Bounce Blast</td>
+      <td>98.2K</td><td>18.6K</td>
+      <td>3.5%</td>
+      <td>$1.84</td>
+      <td>$52.46</td>
+      <td>$42</td>
+      <td>$67</td>
+      <td>$101</td></tr><tr><td style="font-weight:400;color:var(--text)">🍕 Snacky Dash</td>
+      <td>26.8K</td><td>3.3K</td>
+      <td>2.3%</td>
+      <td>$0.61</td>
+      <td>$27.19</td>
+      <td>$22</td>
+      <td>$35</td>
+      <td>$53</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div style="display:flex;flex-direction:column;gap:14px;position:sticky;top:62px">
+
+      <div class="card">
+        <div class="card-title">🪣 Segment Thresholds</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:12px;line-height:1.6">
+          Pick <b style="color:var(--text2)">start</b> and <b style="color:var(--text2)">end bucket</b> for each segment. Table rows highlight instantly.
+        </div>
+        <div id="segRows"><div class="seg-row"><div class="seg-dot" style="background:#3b82f6"></div>
+      <div><div class="seg-lbl">Start</div><select class="seg-sel" onchange="updateSeg(1,'startBucket',this.value)"><option value="1" selected="">#1 $0–2</option><option value="2">#2 $2–4</option><option value="3">#3 $4–6</option><option value="4">#4 $6–8</option><option value="5">#5 $8–10</option><option value="6">#6 $10–12</option><option value="7">#7 $12–14</option><option value="8">#8 $14–16</option><option value="9">#9 $16–18</option><option value="10">#10 $18–20</option><option value="11">#11 $20–22</option><option value="12">#12 $22–24</option><option value="13">#13 $24–26</option><option value="14">#14 $26–28</option><option value="15">#15 $28–30</option><option value="16">#16 $30–32</option><option value="17">#17 $32–34</option><option value="18">#18 $34–36</option><option value="19">#19 $36–38</option><option value="20">#20 $38–40</option><option value="21">#21 $40–42</option><option value="22">#22 $42–44</option><option value="23">#23 $44–46</option><option value="24">#24 $46–48</option><option value="25">#25 $48–50</option><option value="26">#26 $50+</option></select></div>
+      <div style="color:var(--text3);font-size:12px;margin-top:14px">→</div>
+      <div><div class="seg-lbl">End</div><select class="seg-sel" onchange="updateSeg(1,'endBucket',this.value)"><option value="1">#1 $0–2</option><option value="2">#2 $2–4</option><option value="3">#3 $4–6</option><option value="4">#4 $6–8</option><option value="5">#5 $8–10</option><option value="6">#6 $10–12</option><option value="7">#7 $12–14</option><option value="8" selected="">#8 $14–16</option><option value="9">#9 $16–18</option><option value="10">#10 $18–20</option><option value="11">#11 $20–22</option><option value="12">#12 $22–24</option><option value="13">#13 $24–26</option><option value="14">#14 $26–28</option><option value="15">#15 $28–30</option><option value="16">#16 $30–32</option><option value="17">#17 $32–34</option><option value="18">#18 $34–36</option><option value="19">#19 $36–38</option><option value="20">#20 $38–40</option><option value="21">#21 $40–42</option><option value="22">#22 $42–44</option><option value="23">#23 $44–46</option><option value="24">#24 $46–48</option><option value="25">#25 $48–50</option><option value="26">#26 $50+</option></select></div>
+      <div style="flex:1;font-size:11px;color:#3b82f6;font-weight:700;text-align:center;margin-top:14px">$0–$16</div>
+      <div class="seg-del" onclick="removeSeg(1)">×</div></div><div class="seg-row"><div class="seg-dot" style="background:#10b981"></div>
+      <div><div class="seg-lbl">Start</div><select class="seg-sel" onchange="updateSeg(2,'startBucket',this.value)"><option value="1">#1 $0–2</option><option value="2">#2 $2–4</option><option value="3">#3 $4–6</option><option value="4">#4 $6–8</option><option value="5">#5 $8–10</option><option value="6">#6 $10–12</option><option value="7">#7 $12–14</option><option value="8">#8 $14–16</option><option value="9" selected="">#9 $16–18</option><option value="10">#10 $18–20</option><option value="11">#11 $20–22</option><option value="12">#12 $22–24</option><option value="13">#13 $24–26</option><option value="14">#14 $26–28</option><option value="15">#15 $28–30</option><option value="16">#16 $30–32</option><option value="17">#17 $32–34</option><option value="18">#18 $34–36</option><option value="19">#19 $36–38</option><option value="20">#20 $38–40</option><option value="21">#21 $40–42</option><option value="22">#22 $42–44</option><option value="23">#23 $44–46</option><option value="24">#24 $46–48</option><option value="25">#25 $48–50</option><option value="26">#26 $50+</option></select></div>
+      <div style="color:var(--text3);font-size:12px;margin-top:14px">→</div>
+      <div><div class="seg-lbl">End</div><select class="seg-sel" onchange="updateSeg(2,'endBucket',this.value)"><option value="1">#1 $0–2</option><option value="2">#2 $2–4</option><option value="3">#3 $4–6</option><option value="4">#4 $6–8</option><option value="5">#5 $8–10</option><option value="6">#6 $10–12</option><option value="7">#7 $12–14</option><option value="8">#8 $14–16</option><option value="9">#9 $16–18</option><option value="10">#10 $18–20</option><option value="11">#11 $20–22</option><option value="12">#12 $22–24</option><option value="13">#13 $24–26</option><option value="14">#14 $26–28</option><option value="15">#15 $28–30</option><option value="16" selected="">#16 $30–32</option><option value="17">#17 $32–34</option><option value="18">#18 $34–36</option><option value="19">#19 $36–38</option><option value="20">#20 $38–40</option><option value="21">#21 $40–42</option><option value="22">#22 $42–44</option><option value="23">#23 $44–46</option><option value="24">#24 $46–48</option><option value="25">#25 $48–50</option><option value="26">#26 $50+</option></select></div>
+      <div style="flex:1;font-size:11px;color:#10b981;font-weight:700;text-align:center;margin-top:14px">$16–$32</div>
+      <div class="seg-del" onclick="removeSeg(2)">×</div></div><div class="seg-row"><div class="seg-dot" style="background:#f97316"></div>
+      <div><div class="seg-lbl">Start</div><select class="seg-sel" onchange="updateSeg(3,'startBucket',this.value)"><option value="1">#1 $0–2</option><option value="2">#2 $2–4</option><option value="3">#3 $4–6</option><option value="4">#4 $6–8</option><option value="5">#5 $8–10</option><option value="6">#6 $10–12</option><option value="7">#7 $12–14</option><option value="8">#8 $14–16</option><option value="9">#9 $16–18</option><option value="10">#10 $18–20</option><option value="11">#11 $20–22</option><option value="12">#12 $22–24</option><option value="13">#13 $24–26</option><option value="14">#14 $26–28</option><option value="15">#15 $28–30</option><option value="16">#16 $30–32</option><option value="17" selected="">#17 $32–34</option><option value="18">#18 $34–36</option><option value="19">#19 $36–38</option><option value="20">#20 $38–40</option><option value="21">#21 $40–42</option><option value="22">#22 $42–44</option><option value="23">#23 $44–46</option><option value="24">#24 $46–48</option><option value="25">#25 $48–50</option><option value="26">#26 $50+</option></select></div>
+      <div style="color:var(--text3);font-size:12px;margin-top:14px">→</div>
+      <div><div class="seg-lbl">End</div><select class="seg-sel" onchange="updateSeg(3,'endBucket',this.value)"><option value="1">#1 $0–2</option><option value="2">#2 $2–4</option><option value="3">#3 $4–6</option><option value="4">#4 $6–8</option><option value="5">#5 $8–10</option><option value="6">#6 $10–12</option><option value="7">#7 $12–14</option><option value="8">#8 $14–16</option><option value="9">#9 $16–18</option><option value="10">#10 $18–20</option><option value="11">#11 $20–22</option><option value="12">#12 $22–24</option><option value="13">#13 $24–26</option><option value="14">#14 $26–28</option><option value="15">#15 $28–30</option><option value="16">#16 $30–32</option><option value="17">#17 $32–34</option><option value="18">#18 $34–36</option><option value="19">#19 $36–38</option><option value="20">#20 $38–40</option><option value="21">#21 $40–42</option><option value="22">#22 $42–44</option><option value="23">#23 $44–46</option><option value="24">#24 $46–48</option><option value="25">#25 $48–50</option><option value="26" selected="">#26 $50+</option></select></div>
+      <div style="flex:1;font-size:11px;color:#f97316;font-weight:700;text-align:center;margin-top:14px">$32–∞</div>
+      <div class="seg-del" onclick="removeSeg(3)">×</div></div></div>
+        <button class="btn btn-add" onclick="addSegment()">+ Add Segment</button>
+        <div style="margin-top:10px">
+          <button class="btn btn-ghost" style="width:100%;font-size:12px;justify-content:center" onclick="resetSegments()">↺ Reset to Defaults</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📐 Spend Percentiles</div>
+        <div class="perc-grid" id="percCards">
+    <div class="perc-card" style="grid-column:1/-1;background:rgba(99,102,241,.08);border-color:rgba(99,102,241,.2)">
+      <div class="perc-label" style="color:#818cf8">Classification metric</div>
+      <div style="font-size:14px;font-weight:700;margin-top:2px">P75 of each user's purchases</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:2px">Users bucketed by their personal P75 transaction price</div>
+    </div>
+    <div class="perc-card"><div class="perc-label">P50 of pop.</div><div class="perc-val">$8</div></div>
+    <div class="perc-card"><div class="perc-label">P75 of pop.</div><div class="perc-val">$10</div></div>
+    <div class="perc-card"><div class="perc-label">P90 of pop.</div><div class="perc-val">$11</div></div>
+    <div class="perc-card"><div class="perc-label">P95 of pop.</div><div class="perc-val">$15</div></div></div>
+        <div class="cw-sm"><canvas id="percChart" width="724" height="300" style="display: block; box-sizing: border-box; height: 150px; width: 362px;"></canvas></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">⚖️ All Games — Quick KPIs</div>
+        <table style="width:100%;border-collapse:collapse;font-size:11.5px">
+          <thead><tr>
+            <th style="text-align:left;padding:4px 6px;color:var(--text3);border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase">Game</th>
+            <th style="padding:4px 6px;color:var(--text3);border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase;text-align:center">Conv%</th>
+            <th style="padding:4px 6px;color:var(--text3);border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase;text-align:center">ARPPU</th>
+            <th style="padding:4px 6px;color:var(--text3);border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase;text-align:center">P50</th>
+            <th style="padding:4px 6px;color:var(--text3);border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase;text-align:center">P90</th>
+          </tr></thead>
+          <tbody id="miniCompareBody"><tr style="cursor: pointer;"><td style="padding:4px 6px;font-weight:700;color:#6366f1">🔵 Marble Sort</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">1.5%</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$70.1</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$55</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$135</td></tr><tr style="cursor: pointer;"><td style="padding:4px 6px;font-weight:400;color:var(--text)">⏳ Sand Loop</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">3.8%</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$46.0</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$37</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$90</td></tr><tr style="cursor: pointer;"><td style="padding:4px 6px;font-weight:400;color:var(--text)">🔄 Loop Sort</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">3.2%</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$48.9</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$40</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$96</td></tr><tr style="cursor: pointer;"><td style="padding:4px 6px;font-weight:400;color:var(--text)">📿 Beads Out</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">2.0%</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$56.3</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$47</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$104</td></tr><tr style="cursor: pointer;"><td style="padding:4px 6px;font-weight:400;color:var(--text)">🏀 Bounce Blast</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">3.5%</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$52.5</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$42</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$101</td></tr><tr style="cursor: pointer;"><td style="padding:4px 6px;font-weight:400;color:var(--text)">🍕 Snacky Dash</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">2.3%</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$27.2</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$22</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$53</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── GAME DEFINITIONS ─────────────────────────────────────────────────────────
+// Real data from Voodoo DataWhisper — gc_fct1_iap_event_enriched_v1 + cr_fct1_active_user_calendar_metrics_v2
+// Period: May 10 – Jun 8 2026 (queried Jun 9 2026). priceWeights = real per-transaction distribution.
+// Price points: [0.99, 1.99, 2.99, 4.99, 7.99, 9.99, 14.99, 19.99, 29.99, 59.99, 99.99]
+const DEFAULT_GAMES=[
+  {id:'marble_sort', name:'Marble Sort', emoji:'🔵',color:'#6366f1',
+   dau:1669464, convRate:0.0147, avgPrice:7.08, avgTxns:10.0,
+   arppu:70.80, payingPct:1.27,
+   pricePoints:[0.99,1.99,2.99,4.99,7.99,9.99,14.99,19.99,29.99,59.99,99.99],
+   //            $0.99  $1.99  $2.99  $4.99  $7.99  $9.99 $14.99 $19.99 $29.99 $59.99 $99.99
+   priceWeights:[0.003, 0.344, 0.063, 0.134, 0.235, 0.115, 0.043, 0.032, 0.024, 0.005, 0.002]},
+  {id:'sand_loop',   name:'Sand Loop',   emoji:'⏳',color:'#f59e0b',
+   dau:373525,  convRate:0.0381, avgPrice:6.32, avgTxns:7.6,
+   arppu:48.03, payingPct:2.88,
+   pricePoints:[0.99,1.99,2.99,4.99,7.99,9.99,14.99,19.99,29.99,59.99,99.99],
+   priceWeights:[0.000, 0.354, 0.047, 0.271, 0.174, 0.091, 0.019, 0.023, 0.019, 0.001, 0.001]},
+  {id:'loop_sort',   name:'Loop Sort',   emoji:'🔄',color:'#10b981',
+   dau:273066,  convRate:0.0316, avgPrice:6.22, avgTxns:8.0,
+   arppu:49.76, payingPct:2.51,
+   pricePoints:[0.99,1.99,2.99,4.99,7.99,9.99,14.99,19.99,29.99,59.99,99.99],
+   priceWeights:[0.024, 0.417, 0.061, 0.068, 0.262, 0.062, 0.076, 0.003, 0.022, 0.004, 0.001]},
+  {id:'beads_out',   name:'Beads Out',   emoji:'📿',color:'#ec4899',
+   dau:363747,  convRate:0.0197, avgPrice:7.41, avgTxns:7.4,
+   arppu:54.83, payingPct:1.60,
+   pricePoints:[0.99,1.99,2.99,4.99,7.99,9.99,14.99,19.99,29.99,59.99,99.99],
+   priceWeights:[0.001, 0.112, 0.013, 0.304, 0.256, 0.272, 0.012, 0.016, 0.012, 0.002, 0.000]},
+  {id:'bounce_blast',name:'Bounce Blast',emoji:'🏀',color:'#06b6d4',
+   dau:98184,   convRate:0.0350, avgPrice:5.84, avgTxns:8.0,
+   arppu:46.72, payingPct:2.79,
+   pricePoints:[0.99,1.99,2.99,4.99,7.99,9.99,14.99,19.99,29.99,59.99,99.99],
+   priceWeights:[0.015, 0.393, 0.069, 0.116, 0.223, 0.054, 0.091, 0.009, 0.027, 0.002, 0.001]},
+  {id:'snacky_dash', name:'Snacky Dash', emoji:'🍕',color:'#f97316',
+   dau:26838,   convRate:0.0225, avgPrice:5.95, avgTxns:4.5,
+   arppu:26.78, payingPct:1.03,
+   pricePoints:[0.99,1.99,2.99,4.99,7.99,9.99,14.99,19.99,29.99,59.99,99.99],
+   priceWeights:[0.000, 0.367, 0.073, 0.153, 0.275, 0.063, 0.054, 0.001, 0.011, 0.002, 0.001]},
+];
+
+const SEG_COLORS=['#3b82f6','#10b981','#f97316','#a855f7','#ec4899','#ef4444','#06b6d4'];
+const SPEND_CAP=50;
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let GAMES=JSON.parse(JSON.stringify(DEFAULT_GAMES));
+let S={
+  activeGame:'marble_sort',lookbackVal:30,binSize:2,
+  classPercentile:75,  // which percentile of each user's OWN purchases to use as their classification price
+  segments:[],_cache:{},
+  dataSource:'synthetic', // 'synthetic' | 'csv'
+  csvData:null,
+  percCI:null,dauCI:null,revCI:null,txnCI:null,barCI:null,cmpCI:null,
+  _pendingParams:{},
+  _pendingCsv:null,
+};
+let _genPending=null; // tracks in-progress async generation
+
+// ─── PRNG ──────────────────────────────────────────────────────────────────────
+function seededRng(seed){let s=seed|0;return()=>{s=(Math.imul(s,1664525)+1013904223)|0;return(s>>>0)/4294967296;};}
+function randNormal(rng,mean=0,std=1){let u=0,v=0;while(!u)u=rng();while(!v)v=rng();return mean+std*Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function wChoice(rng,items,weights){let r=rng(),cum=0;for(let i=0;i<items.length;i++){cum+=weights[i];if(r<cum)return items[i];}return items[items.length-1];}
+
+// ─── SIMULATION DATA ─────────────────────────────────────────────────────────
+// generateSynthetic: fast 3K-capped version used ONLY for comparison charts.
+// Uses its own _compareCache so it never pollutes S._cache (reserved for full async data).
+const MAX_SIM_PAYERS=3000;
+const _compareCache={};
+function generateSynthetic(game,lookback){
+  const k=game.id+'_'+lookback+'_'+game.dau+'_'+game.convRate+'_'+game.avgTxns;
+  if(_compareCache[k])return _compareCache[k];
+  const rng=seededRng(game.id.split('').reduce((a,c)=>a+c.charCodeAt(0),0)+lookback*37);
+  // Use active-users model: users who played at some point in the window
+  const activeUsers=Math.round(game.dau*lookback*0.18);
+  const truePayerCount=Math.round(activeUsers*game.convRate);
+  // Cap simulation to keep browser responsive; scale stats back to true values
+  const payerCount=Math.min(truePayerCount,MAX_SIM_PAYERS);
+  const payers=[];
+  const logMean=Math.log(Math.max(1,game.avgTxns))-0.5*0.6*0.6;
+  for(let i=0;i<payerCount;i++){
+    const uid=`U${(1000000+Math.floor(rng()*9000000)).toString(16).toUpperCase()}`;
+    const freq=Math.max(1,Math.min(60,Math.round(Math.exp(randNormal(rng,logMean,0.6)))));
+    let totalSpend=0; const purchases=[];
+    for(let p=0;p<freq;p++){
+      const basePrice=wChoice(rng,game.pricePoints,game.priceWeights);
+      purchases.push(basePrice); totalSpend+=basePrice;
+    }
+    const daysActive=Math.round(1+rng()*lookback*0.8);
+    // Store raw purchase prices — classification is based on per-user percentile of these
+    payers.push({uid,totalSpend,purchaseCount:freq,purchases,daysActive});
+  }
+  const sampleRevenue=payers.reduce((s,u)=>s+u.totalSpend,0);
+  const samplePurchases=payers.reduce((s,u)=>s+u.purchaseCount,0);
+  // Scale absolute stats back to true population when capped
+  const scale=truePayerCount>MAX_SIM_PAYERS?truePayerCount/payers.length:1;
+  const res={game,payers,payerCount:payers.length,truePayerCount,totalUsers:Math.round(activeUsers),
+    totalRevenue:sampleRevenue*scale,totalPurchases:samplePurchases*scale,
+    sampleRevenue,samplePurchases,  // unscaled — use these as % denominators in ref/dist tables
+    source:'real_data'};
+  _compareCache[k]=res; return res;
+}
+
+// ─── ASYNC FULL SIMULATION (Option B) ─────────────────────────────────────────
+// Generates ALL truePayerCount payers in ~2000-per-frame chunks via rAF.
+// Precomputes _cpCache per user so computeBins never re-sorts per render.
+const CHUNK_SIZE=2000;
+
+function showGenProgress(label,pct){
+  document.getElementById('genProgress').style.display='';
+  document.getElementById('genProgressLabel').textContent=label;
+  document.getElementById('genProgressPct').textContent=pct+'%';
+  document.getElementById('genProgressBar').style.width=pct+'%';
+}
+function hideGenProgress(){
+  document.getElementById('genProgress').style.display='none';
+}
+
+function startAsyncGen(game,lookback,onDone){
+  const k=game.id+'_'+lookback+'_'+game.dau+'_'+game.convRate+'_'+game.avgTxns;
+  // Already cached → instant callback
+  if(S._cache[k]){onDone(S._cache[k]);return;}
+  // Already generating same key → just queue the callback
+  if(_genPending&&_genPending.key===k){_genPending.callbacks.push(onDone);return;}
+  // Cancel any previous generation (different game/params)
+  if(_genPending)_genPending.cancelled=true;
+
+  const rng=seededRng(game.id.split('').reduce((a,c)=>a+c.charCodeAt(0),0)+lookback*37);
+  const activeUsers=Math.round(game.dau*lookback*0.18);
+  const truePayerCount=Math.round(activeUsers*game.convRate);
+  const logMean=Math.log(Math.max(1,game.avgTxns))-0.5*0.6*0.6;
+  const payers=[];
+  let i=0;
+
+  const gen=_genPending={key:k,cancelled:false,callbacks:[onDone]};
+
+  function chunk(){
+    if(gen.cancelled)return;
+    const end=Math.min(i+CHUNK_SIZE,truePayerCount);
+    for(;i<end;i++){
+      const uid=`U${(1000000+Math.floor(rng()*9000000)).toString(16).toUpperCase()}`;
+      const freq=Math.max(1,Math.min(60,Math.round(Math.exp(randNormal(rng,logMean,0.6)))));
+      let totalSpend=0;const purchases=[];
+      for(let p=0;p<freq;p++){
+        const basePrice=wChoice(rng,game.pricePoints,game.priceWeights);
+        purchases.push(basePrice);totalSpend+=basePrice;
+      }
+      const daysActive=Math.round(1+rng()*lookback*0.8);
+      // Precompute all classification prices once per user (avoids re-sorting on every computeBins call)
+      const _cpCache={
+        25:percentile(purchases,25),
+        50:percentile(purchases,50),
+        75:percentile(purchases,75),
+        90:percentile(purchases,90),
+      };
+      payers.push({uid,totalSpend,purchaseCount:freq,purchases,daysActive,_cpCache});
+    }
+    const pct=Math.round(i/truePayerCount*100);
+    showGenProgress(`⚙️ Simulating ${fmtK(i)} / ${fmtK(truePayerCount)} payers…`,pct);
+    if(i<truePayerCount){
+      requestAnimationFrame(chunk);
+    } else {
+      hideGenProgress();
+      const sampleRevenue=payers.reduce((s,u)=>s+u.totalSpend,0);
+      const samplePurchases=payers.reduce((s,u)=>s+u.purchaseCount,0);
+      const res={game,payers,payerCount:payers.length,truePayerCount,
+        totalUsers:Math.round(activeUsers),
+        totalRevenue:sampleRevenue,totalPurchases:samplePurchases,
+        sampleRevenue,samplePurchases,  // no scaling needed — all payers are simulated
+        source:'real_data'};
+      S._cache[k]=res;
+      _genPending=null;
+      for(const cb of gen.callbacks)cb(res);
+    }
+  }
+  requestAnimationFrame(chunk);
+}
+
+// ─── CSV PARSING ──────────────────────────────────────────────────────────────
+function parseCsv(text){
+  const lines=text.trim().split(/\r?\n/).filter(l=>l.trim());
+  if(lines.length<2)throw new Error('File too short');
+  const header=lines[0].toLowerCase().replace(/\s/g,'').split(',');
+  const rows=lines.slice(1);
+  // Detect format
+  let format;
+  if(header.includes('total_spend')&&header.includes('purchase_count')) format='per_user';
+  else if(header.length>=2&&!header.includes('purchase_count')) format='per_txn';
+  else throw new Error('Unrecognized columns: '+header.join(', '));
+
+  const userMap={};
+  for(const row of rows){
+    const cols=row.split(',');
+    if(cols.length<2)continue;
+    const uid=cols[0].trim();
+    if(!uid)continue;
+    if(format==='per_user'){
+      const spend=parseFloat(cols[1])||0;
+      const txns=parseInt(cols[2])||1;
+      // Approximate purchases array as uniform average prices
+      const avgP=txns>0?spend/txns:spend;
+      const purchases=Array(txns).fill(avgP);
+      userMap[uid]={uid,totalSpend:spend,purchaseCount:txns,purchases,daysActive:30};
+    } else {
+      const amount=parseFloat(cols[1])||0;
+      if(!userMap[uid]) userMap[uid]={uid,totalSpend:0,purchaseCount:0,purchases:[],daysActive:30};
+      userMap[uid].totalSpend+=amount;
+      userMap[uid].purchaseCount++;
+      userMap[uid].purchases.push(amount);
+    }
+  }
+  const payers=Object.values(userMap).filter(u=>u.totalSpend>0);
+  if(!payers.length)throw new Error('No valid payer rows found');
+  const totalRevenue=payers.reduce((s,u)=>s+u.totalSpend,0);
+  const totalPurchases=payers.reduce((s,u)=>s+u.purchaseCount,0);
+  return{payers,payerCount:payers.length,totalUsers:payers.length,totalRevenue,totalPurchases,source:'csv',format};
+}
+
+// ─── GET ACTIVE DATA ──────────────────────────────────────────────────────────
+function getActiveData(){
+  if(S.dataSource==='csv'&&S.csvData){
+    const game=GAMES.find(g=>g.id===S.activeGame);
+    return{...S.csvData,game};
+  }
+  const game=GAMES.find(g=>g.id===S.activeGame);
+  const k=game.id+'_'+S.lookbackVal+'_'+game.dau+'_'+game.convRate+'_'+game.avgTxns;
+  // Prefer async-generated full data from S._cache
+  if(S._cache[k]) return S._cache[k];
+  // Fallback to 3K capped (only hit before async gen completes — runAnalysis guards against this)
+  return generateSynthetic(game,S.lookbackVal);
+}
+
+// ─── PER-USER CLASSIFICATION PRICE ───────────────────────────────────────────
+// Each user is classified by the Pth percentile of their OWN purchase amounts.
+// E.g. if classPercentile=50 (median), a user who mostly buys $2-5 items
+// with a median of $3 lands in the "$2–4" bucket — regardless of how many
+// purchases they've made in total.
+function userClassPrice(user, pct){
+  // Use precomputed cache when available (async-generated payers)
+  if(user._cpCache&&user._cpCache[pct]!==undefined)return user._cpCache[pct];
+  if(!user.purchases||!user.purchases.length) return user.totalSpend||0;
+  return percentile(user.purchases, pct);
+}
+
+// ─── BINS ─────────────────────────────────────────────────────────────────────
+// Two-pass design:
+//   count  = users whose P-th-percentile price falls in this bin (user-centric → % PDAU)
+//   rev    = revenue from individual purchases priced in this bin (transaction-centric → % IAP)
+//   txns   = count of purchases priced in this bin (transaction-centric → % Transactions)
+//
+// Example: a user with P75=$7 who makes 8×$1.99 + 2×$7.99 purchases:
+//   • Counts toward the $6–8 PDAU bucket (P75 classification)
+//   • Their 8×$1.99 purchases add to $0–2 revenue/txns
+//   • Their 2×$7.99 purchases add to $6–8 revenue/txns
+function computeBins(data, binSize, classPercentile){
+  const cp = classPercentile ?? S.classPercentile;
+  const payers = data.payers;
+  const lastIdx = Math.floor(SPEND_CAP/binSize); // index of the $SPEND_CAP+ bin
+
+  // Build empty bin array
+  const bins=[];
+  for(let lo=0;lo<SPEND_CAP;lo+=binSize){
+    bins.push({lo,hi:lo+binSize,label:`$${lo}–${lo+binSize}`,count:0,rev:0,txns:0,isPlus:false});
+  }
+  bins.push({lo:SPEND_CAP,hi:Infinity,label:`$${SPEND_CAP}+`,count:0,rev:0,txns:0,isPlus:true});
+
+  // Pass 1: PDAU count — user classified by their P-th percentile purchase price
+  for(const u of payers){
+    const cp_price = userClassPrice(u, cp);
+    const bi = cp_price >= SPEND_CAP ? bins.length-1 : Math.min(Math.floor(cp_price/binSize), bins.length-2);
+    bins[bi].count++;
+  }
+
+  // Pass 2: Revenue & transactions — each individual purchase goes to its own price bucket
+  for(const u of payers){
+    for(const price of u.purchases){
+      const bi = price >= SPEND_CAP ? bins.length-1 : Math.min(Math.floor(price/binSize), bins.length-2);
+      bins[bi].rev += price;
+      bins[bi].txns++;
+    }
+  }
+
+  return bins;
+}
+
+// ─── PERCENTILE ───────────────────────────────────────────────────────────────
+function percentile(arr,p){if(!arr.length)return 0;const s=[...arr].sort((a,b)=>a-b);const idx=(p/100)*(s.length-1);const lo=Math.floor(idx),hi=Math.ceil(idx);return lo===hi?s[lo]:s[lo]+(s[hi]-s[lo])*(idx-lo);}
+
+// Compute bin labels from binSize alone — no user data needed.
+// Used by segment controls so they don't trigger a synchronous simulation.
+function computeBinLabels(binSize){
+  const bins=[];
+  for(let lo=0;lo<SPEND_CAP;lo+=binSize){
+    bins.push({lo,hi:lo+binSize,label:`$${lo}–${lo+binSize}`,isPlus:false,count:0,rev:0,txns:0});
+  }
+  bins.push({lo:SPEND_CAP,hi:Infinity,label:`$${SPEND_CAP}+`,isPlus:true,count:0,rev:0,txns:0});
+  return bins;
+}
+
+// ─── DEFAULT SEGMENTS ─────────────────────────────────────────────────────────
+function defaultSegments(bins){
+  const n=bins.length,t=Math.floor(n/3);
+  return[
+    {id:1,name:'Low',color:SEG_COLORS[0],startBucket:1,endBucket:t},
+    {id:2,name:'Mid',color:SEG_COLORS[1],startBucket:t+1,endBucket:t*2},
+    {id:3,name:'High',color:SEG_COLORS[2],startBucket:t*2+1,endBucket:n},
+  ];
+}
+function resetSegments(){const b=computeBinLabels(S.binSize);S.segments=defaultSegments(b);renderSegRows(b);runAnalysis();}
+function addSegment(){const b=computeBinLabels(S.binSize);const n=b.length;S.segments.push({id:Date.now(),name:`Seg ${S.segments.length+1}`,color:SEG_COLORS[S.segments.length%SEG_COLORS.length],startBucket:1,endBucket:n});renderSegRows(b);runAnalysis();}
+function removeSeg(id){S.segments=S.segments.filter(s=>s.id!==id);const b=computeBinLabels(S.binSize);renderSegRows(b);runAnalysis();}
+function updateSeg(id,field,val){const seg=S.segments.find(s=>s.id===id);if(seg){seg[field]=parseInt(val);const b=computeBinLabels(S.binSize);renderSegRows(b);runAnalysis();}}
+
+function renderSegRows(bins){
+  const c=document.getElementById('segRows');c.innerHTML='';
+  for(const seg of S.segments){
+    const n=bins.length;
+    const mkOpts=sel=>bins.map((b,i)=>`<option value="${i+1}"${sel===i+1?' selected':''}>#${i+1} ${b.label}</option>`).join('');
+    const sb=bins[Math.min(seg.startBucket-1,n-1)];
+    const eb=bins[Math.min(seg.endBucket-1,n-1)];
+    const rl=sb&&eb?`${sb.isPlus&&eb.isPlus?'$'+SPEND_CAP+'+':'$'+sb.lo+'–'+(eb.isPlus?'∞':'$'+eb.hi)}`:'';
+    const row=document.createElement('div');row.className='seg-row';
+    row.innerHTML=`<div class="seg-dot" style="background:${seg.color}"></div>
+      <div><div class="seg-lbl">Start</div><select class="seg-sel" onchange="updateSeg(${seg.id},'startBucket',this.value)">${mkOpts(seg.startBucket)}</select></div>
+      <div style="color:var(--text3);font-size:12px;margin-top:14px">→</div>
+      <div><div class="seg-lbl">End</div><select class="seg-sel" onchange="updateSeg(${seg.id},'endBucket',this.value)">${mkOpts(seg.endBucket)}</select></div>
+      <div style="flex:1;font-size:11px;color:${seg.color};font-weight:700;text-align:center;margin-top:14px">${rl}</div>
+      <div class="seg-del" onclick="removeSeg(${seg.id})">×</div>`;
+    c.appendChild(row);
+  }
+}
+
+// ─── MAIN ANALYSIS ────────────────────────────────────────────────────────────
+function runAnalysis(){
+  // For synthetic (non-CSV) data, trigger full async generation if not cached
+  if(S.dataSource!=='csv'){
+    const game=GAMES.find(g=>g.id===S.activeGame);
+    const k=game.id+'_'+S.lookbackVal+'_'+game.dau+'_'+game.convRate+'_'+game.avgTxns;
+    if(!S._cache[k]){
+      startAsyncGen(game,S.lookbackVal,()=>runAnalysis());
+      return; // will re-enter once generation completes
+    }
+  }
+  let data,bins,binSegIdx,segTotals;
+  try{
+    data=getActiveData();
+    bins=computeBins(data,S.binSize);
+    binSegIdx=bins.map((_,i)=>S.segments.findIndex(seg=>(i+1)>=seg.startBucket&&(i+1)<=seg.endBucket));
+
+    renderRefTable(bins,binSegIdx,data);
+    renderPercentiles(data);
+    renderStats(data);
+
+    segTotals=S.segments.map((seg,si)=>{
+      const sb=bins[Math.min(seg.startBucket-1,bins.length-1)];
+      const eb=bins[Math.min(seg.endBucket-1,bins.length-1)];
+      const segLo=sb?sb.lo:0;
+      const segHi=eb?(eb.isPlus?Infinity:eb.hi):Infinity;
+
+      // PDAU: users whose P-th percentile price falls in this segment's bin range
+      const segPayers=data.payers.filter(u=>{
+        const cp=userClassPrice(u,S.classPercentile);
+        return cp>=segLo&&(segHi===Infinity||cp<segHi);
+      });
+
+      // Revenue & transactions: transaction-centric — purchases priced in this range (ALL users)
+      let rev=0,txns=0;
+      for(const u of data.payers){
+        for(const price of u.purchases){
+          if(price>=segLo&&(segHi===Infinity||price<segHi)){rev+=price;txns++;}
+        }
+      }
+
+      // User-centric avg spend & txns per payer (for the Avg $ and Avg Txns display columns)
+      const userRev=segPayers.reduce((s,u)=>s+u.totalSpend,0);
+      const userTxns=segPayers.reduce((s,u)=>s+u.purchaseCount,0);
+
+      return{seg,payers:segPayers,rev,txns,count:segPayers.length,
+        userRev,userTxns,  // for per-user averages
+        rangeStr:sb&&eb?`$${sb.lo}–${eb.isPlus?'∞':'$'+eb.hi}`:'—',
+        bucketRange:`#${seg.startBucket}–#${seg.endBucket}`};
+    });
+  }catch(err){
+    console.error('runAnalysis error:',err);
+    const tb=document.getElementById('resultBody');
+    if(tb)tb.innerHTML=`<tr><td colspan="8" style="color:#ef4444;padding:12px;text-align:center;font-size:12px">⚠️ Error: ${err.message}</td></tr>`;
+    return;
+  }
+
+  // Render the critical table immediately — this paints before the heavy chart work
+  renderDistResults(segTotals,data);
+  renderUserSample(segTotals);
+  // Defer charts & compare so the table shows first
+  setTimeout(()=>{
+    try{renderCharts(segTotals,data);}catch(e){console.error('renderCharts',e);}
+    setTimeout(()=>{
+      try{renderCompare();}catch(e){console.error('renderCompare',e);}
+      try{renderMiniCompare();}catch(e){console.error('renderMiniCompare',e);}
+    },0);
+  },0);
+}
+
+// ─── RENDER: REF TABLE ────────────────────────────────────────────────────────
+function renderRefTable(bins,binSegIdx,data){
+  const body=document.getElementById('refBody');body.innerHTML='';
+  // Use sample-level totals as denominators so percentages are consistent with bin values
+  const sRev=data.sampleRevenue||data.totalRevenue;
+  const sTxns=data.samplePurchases||data.totalPurchases;
+  const scale=(data.truePayerCount||data.payerCount)/data.payerCount;
+  const maxP=Math.max(0.01,...bins.map(b=>data.payerCount?b.count/data.payerCount*100:0));
+  const maxR=Math.max(0.01,...bins.map(b=>sRev?b.rev/sRev*100:0));
+  const maxT=Math.max(0.01,...bins.map(b=>sTxns?b.txns/sTxns*100:0));
+  bins.forEach((b,i)=>{
+    const si=binSegIdx[i];const seg=si>=0?S.segments[si]:null;
+    const pdau=data.payerCount?b.count/data.payerCount*100:0;
+    const rev=sRev?b.rev/sRev*100:0;
+    const txn=sTxns?b.txns/sTxns*100:0;
+    // Show scaled payer count (approx real population)
+    const dispCount=scale>1.5?'~'+fmtK(Math.round(b.count*scale)):b.count.toLocaleString();
+    const tr=document.createElement('tr');
+    if(si>=0)tr.className=`sh${si%7}`;
+    tr.innerHTML=`<td class="sm"><div class="sm-fill" style="background:${seg?seg.color:'transparent'}"></div></td>
+      <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#${i+1} ${b.label}</td>
+      <td style="text-align:right;font-size:12px;font-weight:600">${dispCount}</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:${pdau/maxP*100}%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">${pdau.toFixed(0)}%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:${rev/maxR*100}%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">${rev.toFixed(0)}%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:${txn/maxT*100}%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">${txn.toFixed(0)}%</div></div></td>`;
+    body.appendChild(tr);
+  });
+  const pLabel={25:'P25',50:'Median (P50)',75:'P75',90:'P90'}[S.classPercentile]||`P${S.classPercentile}`;
+  const srcLabel=data.source==='csv'?'CSV upload':data.source==='real_data'?'Voodoo DataWhisper (30d)':'simulated';
+  const payerDisplay=fmtK(data.truePayerCount||data.payerCount);
+  document.getElementById('refHint').textContent=`Bucketed by each user's ${pLabel} purchase price · ~${payerDisplay} payers · ${bins.length} buckets (cap $${SPEND_CAP}+) · ${srcLabel}`;
+}
+
+// ─── RENDER: PERCENTILES ─────────────────────────────────────────────────────
+function renderPercentiles(data){
+  // Each user's classification price = their personal Pth-percentile purchase
+  const classPrices=data.payers.map(u=>userClassPrice(u,S.classPercentile));
+  const p50=percentile(classPrices,50),p75=percentile(classPrices,75),
+        p90=percentile(classPrices,90),p95=percentile(classPrices,95);
+  const cp=S.classPercentile;
+  document.getElementById('percCards').innerHTML=`
+    <div class="perc-card" style="grid-column:1/-1;background:rgba(99,102,241,.08);border-color:rgba(99,102,241,.2)">
+      <div class="perc-label" style="color:#818cf8">Classification metric</div>
+      <div style="font-size:14px;font-weight:700;margin-top:2px">P${cp} of each user's purchases</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:2px">Users bucketed by their personal P${cp} transaction price</div>
+    </div>
+    <div class="perc-card"><div class="perc-label">P50 of pop.</div><div class="perc-val">$${p50.toFixed(0)}</div></div>
+    <div class="perc-card"><div class="perc-label">P75 of pop.</div><div class="perc-val">$${p75.toFixed(0)}</div></div>
+    <div class="perc-card"><div class="perc-label">P90 of pop.</div><div class="perc-val">$${p90.toFixed(0)}</div></div>
+    <div class="perc-card"><div class="perc-label">P95 of pop.</div><div class="perc-val">$${p95.toFixed(0)}</div></div>`;
+  const NBINS=18,maxS=Math.min(p95*1.8,SPEND_CAP),bsz=maxS/NBINS;
+  const hist=Array(NBINS).fill(0);
+  for(const s of classPrices){hist[Math.min(NBINS-1,Math.floor(s/bsz))]++;}
+  if(S.percCI)S.percCI.destroy();
+  S.percCI=new Chart(document.getElementById('percChart'),{type:'bar',
+    data:{labels:hist.map((_,i)=>'$'+(i*bsz).toFixed(0)),datasets:[{data:hist,borderRadius:2,
+      backgroundColor:hist.map((_,i)=>{const sp=i*bsz;return sp<p50?'#3b82f6bb':sp<p75?'#10b981bb':sp<p90?'#f59e0bbb':'#ec4899bb';})}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.raw} payers`}}},
+      scales:{x:{ticks:{color:'var(--text3)',maxTicksLimit:5,font:{size:9}},grid:{color:'rgba(128,128,128,.06)'}},y:{ticks:{color:'var(--text3)',font:{size:9}},grid:{color:'rgba(128,128,128,.06)'}}}}});
+}
+
+// ─── RENDER: STATS ────────────────────────────────────────────────────────────
+function renderStats(data){
+  const displayPayers=data.truePayerCount||data.payerCount;
+  const conv=(displayPayers/data.totalUsers*100).toFixed(1);
+  const arpu=(data.totalRevenue/data.totalUsers).toFixed(2);
+  const arppu=displayPayers?(data.totalRevenue/displayPayers).toFixed(2):'—';
+  document.getElementById('statsStrip').innerHTML=`
+    <div class="stat-box"><div class="sv">${fmtK(data.game.dau)}</div><div class="sl">DAU</div></div>
+    <div class="stat-box"><div class="sv">${fmtK(displayPayers)}</div><div class="sl">Paying Users</div></div>
+    <div class="stat-box"><div class="sv">${conv}%</div><div class="sl">Conversion</div></div>
+    <div class="stat-box"><div class="sv">$${arpu}</div><div class="sl">ARPU</div></div>
+    <div class="stat-box"><div class="sv">$${arppu}</div><div class="sl">ARPPU</div></div>
+    <div class="stat-box"><div class="sv">$${fmtK(Math.round(data.totalRevenue))}</div><div class="sl">Revenue</div></div>
+    <div class="stat-box"><div class="sv">${fmtK(data.totalPurchases)}</div><div class="sl">Transactions</div></div>`;
+}
+
+// ─── RENDER: DIST RESULTS ────────────────────────────────────────────────────
+function renderDistResults(segTotals,data){
+  // Use sample-level totals as % denominators (bin/seg values are unscaled sample)
+  const sRev=data.sampleRevenue||data.totalRevenue;
+  const sTxns=data.samplePurchases||data.totalPurchases;
+  const scale=(data.truePayerCount||data.payerCount)/data.payerCount;
+  const hbar=document.getElementById('hbarWrap');hbar.innerHTML='';
+  segTotals.forEach(st=>{
+    const iap=sRev?st.rev/sRev*100:0;
+    const pdau=data.payerCount?st.count/data.payerCount*100:0;
+    const txn=sTxns?st.txns/sTxns*100:0;
+    const div=document.createElement('div');div.className='hbar-seg';
+    div.innerHTML=`<div class="hbar-name" style="color:${st.seg.color}">${st.seg.name} <span style="font-weight:400;color:var(--text3);font-size:11px">${st.rangeStr} · ${st.bucketRange}</span></div>
+      ${hbm('% of IAP',iap,'#3b82f6')}${hbm('% of PDAU',pdau,'#ef4444')}${hbm('% of Transactions',txn,'#f59e0b')}`;
+    hbar.appendChild(div);
+  });
+  const tbody=document.getElementById('resultBody');tbody.innerHTML='';
+  segTotals.forEach(st=>{
+    const iap=sRev?st.rev/sRev*100:0;
+    const pdau=data.payerCount?st.count/data.payerCount*100:0;
+    const txn=sTxns?st.txns/sTxns*100:0;
+    const dispCount=scale>1.5?'~'+fmtK(Math.round(st.count*scale)):st.count.toLocaleString();
+    const tr=document.createElement('tr');
+    // Avg $ and Avg Txns are user-centric (how much does a typical user in this segment spend/transact)
+    const avgSpend=st.count?(st.userRev/st.count).toFixed(2):'—';
+    const avgTxns=st.count?(st.userTxns/st.count).toFixed(1):'—';
+    tr.innerHTML=`<td><div class="bname"><div style="width:8px;height:8px;border-radius:50%;background:${st.seg.color}"></div>${st.seg.name}</div></td>
+      <td style="font-size:11px;color:var(--text2)">${st.rangeStr}</td>
+      <td style="font-weight:600">${dispCount}</td>
+      <td style="font-weight:700;color:#3b82f6">${iap.toFixed(1)}%</td>
+      <td style="font-weight:700;color:#ef4444">${pdau.toFixed(1)}%</td>
+      <td style="font-weight:700;color:#f59e0b">${txn.toFixed(1)}%</td>
+      <td style="color:var(--text2)">$${avgSpend}</td>
+      <td style="color:var(--text2)">${avgTxns}</td>`;
+    tbody.appendChild(tr);
+  });
+  // Unassigned
+  const assignedUids=new Set(segTotals.flatMap(st=>st.payers.map(u=>u.uid)));
+  const un=data.payers.filter(u=>!assignedUids.has(u.uid));
+  if(un.length){
+    const rev=un.reduce((s,u)=>s+u.totalSpend,0),txns=un.reduce((s,u)=>s+u.purchaseCount,0);
+    const dispUn=scale>1.5?'~'+fmtK(Math.round(un.length*scale)):un.length.toLocaleString();
+    const tr=document.createElement('tr');tr.style.opacity='.4';
+    tr.innerHTML=`<td><div class="bname"><div style="width:8px;height:8px;border-radius:50%;background:var(--text3)"></div>Unassigned</div></td>
+      <td style="color:var(--text3)">—</td><td style="font-weight:600">${dispUn}</td>
+      <td style="color:var(--text3)">${sRev?(rev/sRev*100).toFixed(1):0}%</td>
+      <td style="color:var(--text3)">${data.payerCount?(un.length/data.payerCount*100).toFixed(1):0}%</td>
+      <td style="color:var(--text3)">${sTxns?(txns/sTxns*100).toFixed(1):0}%</td>
+      <td style="color:var(--text3)">—</td><td style="color:var(--text3)">—</td>`;
+    tbody.appendChild(tr);
+  }
+}
+function hbm(label,pct,color){return`<div class="hbar-metric"><div class="hbar-mlabel">${label}</div>
+  <div class="hbar-bg"><div class="hbar-fill" style="width:${Math.min(100,pct)}%;background:${color}"></div>
+    <div class="grid-line" style="left:25%"></div><div class="grid-line" style="left:50%"></div><div class="grid-line" style="left:75%"></div></div>
+  <div class="hbar-val" style="color:${color}">${pct.toFixed(1)}%</div></div>`;}
+
+// ─── RENDER: CHARTS ───────────────────────────────────────────────────────────
+function renderCharts(segTotals,data){
+  const labels=segTotals.map(st=>st.seg.name);
+  const colors=segTotals.map(st=>st.seg.color);
+  const iaps=segTotals.map(st=>+(data.totalRevenue?st.rev/data.totalRevenue*100:0).toFixed(1));
+  const pdaus=segTotals.map(st=>+(data.payerCount?st.count/data.payerCount*100:0).toFixed(1));
+  const txns=segTotals.map(st=>+(data.totalPurchases?st.txns/data.totalPurchases*100:0).toFixed(1));
+  const pieOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'var(--text2)',font:{size:10},padding:10,boxWidth:10}},tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw}%`}}}};
+  const dstr=c=>`#1a1d27`;
+  if(S.dauCI)S.dauCI.destroy();S.dauCI=new Chart(document.getElementById('dauChart'),{type:'doughnut',data:{labels,datasets:[{data:pdaus,backgroundColor:colors,borderWidth:2,borderColor:dstr()}]},options:pieOpts});
+  if(S.revCI)S.revCI.destroy();S.revCI=new Chart(document.getElementById('revChart'),{type:'doughnut',data:{labels,datasets:[{data:iaps,backgroundColor:colors,borderWidth:2,borderColor:dstr()}]},options:pieOpts});
+  if(S.txnCI)S.txnCI.destroy();S.txnCI=new Chart(document.getElementById('txnChart'),{type:'doughnut',data:{labels,datasets:[{data:txns,backgroundColor:colors,borderWidth:2,borderColor:dstr()}]},options:pieOpts});
+  if(S.barCI)S.barCI.destroy();
+  S.barCI=new Chart(document.getElementById('barChart'),{type:'bar',
+    data:{labels,datasets:[
+      {label:'% IAP',data:iaps,backgroundColor:colors.map(c=>c+'99'),borderColor:colors,borderWidth:1.5,borderRadius:4},
+      {label:'% PDAU',data:pdaus,backgroundColor:colors.map(c=>c+'cc'),borderColor:colors,borderWidth:1.5,borderRadius:4},
+      {label:'% Txns',data:txns,backgroundColor:colors,borderColor:colors,borderWidth:1.5,borderRadius:4},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'var(--text2)',font:{size:11}}}},
+      scales:{x:{ticks:{color:'var(--text2)',font:{size:11}},grid:{color:'rgba(128,128,128,.07)'}},
+        y:{ticks:{color:'var(--text3)',font:{size:10},callback:v=>v+'%'},grid:{color:'rgba(128,128,128,.07)'},max:100}}}});
+}
+
+// ─── RENDER: USERS ────────────────────────────────────────────────────────────
+function renderUserSample(segTotals){
+  const body=document.getElementById('userBody');body.innerHTML='';
+  segTotals.forEach(st=>{
+    st.payers.slice(0,8).forEach(u=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td style="font-family:monospace;font-size:11px;color:var(--text3)">${u.uid}</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:${st.seg.color}"></div>${st.seg.name}</div></td>
+        <td style="font-weight:600">$${u.totalSpend.toFixed(2)}</td>
+        <td>${u.purchaseCount}</td>
+        <td>$${u.purchaseCount?(u.totalSpend/u.purchaseCount).toFixed(2):'—'}</td>
+        <td>${u.daysActive}d</td>`;
+      body.appendChild(tr);
+    });
+  });
+}
+
+// ─── RENDER: COMPARE ──────────────────────────────────────────────────────────
+function renderCompare(){
+  const allData=GAMES.map(g=>({g,d:generateSynthetic(g,S.lookbackVal)}));
+  if(S.cmpCI)S.cmpCI.destroy();
+  S.cmpCI=new Chart(document.getElementById('compareChart'),{type:'bar',
+    data:{labels:allData.map(x=>x.g.name),datasets:[
+      {label:'ARPPU ($)',data:allData.map(x=>{const p=x.d.truePayerCount||x.d.payerCount;return p?+(x.d.totalRevenue/p).toFixed(2):0;}),
+        backgroundColor:GAMES.map(g=>g.color+'bb'),borderColor:GAMES.map(g=>g.color),borderWidth:1.5,borderRadius:6,yAxisID:'y'},
+      {label:'Conv %',data:allData.map(x=>{const p=x.d.truePayerCount||x.d.payerCount;return+(p/x.d.totalUsers*100).toFixed(2);}),
+        backgroundColor:'rgba(255,255,255,.1)',borderColor:'rgba(255,255,255,.5)',
+        borderWidth:1.5,type:'line',fill:false,tension:0.3,pointRadius:5,yAxisID:'y2'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'var(--text2)',font:{size:11}}}},
+      scales:{x:{ticks:{color:'var(--text2)',font:{size:12}},grid:{color:'rgba(128,128,128,.06)'}},
+        y:{ticks:{color:'var(--text3)',font:{size:10},callback:v=>'$'+v},grid:{color:'rgba(128,128,128,.06)'}},
+        y2:{position:'right',ticks:{color:'var(--text3)',font:{size:10},callback:v=>v+'%'},grid:{display:false}}}}});
+  const body=document.getElementById('compareBody');body.innerHTML='';
+  allData.forEach(({g,d})=>{
+    const sp=d.payers.map(u=>u.totalSpend);
+    const tr=document.createElement('tr');
+    const dp=d.truePayerCount||d.payerCount;
+    tr.innerHTML=`<td style="font-weight:${g.id===S.activeGame?'700':'400'};color:${g.id===S.activeGame?g.color:'var(--text)'}">${g.emoji} ${g.name}</td>
+      <td>${fmtK(d.game.dau)}</td><td>${fmtK(dp)}</td>
+      <td>${(dp/d.totalUsers*100).toFixed(1)}%</td>
+      <td>$${(d.totalRevenue/d.totalUsers).toFixed(2)}</td>
+      <td>$${dp?(d.totalRevenue/dp).toFixed(2):'—'}</td>
+      <td>$${percentile(sp,50).toFixed(0)}</td>
+      <td>$${percentile(sp,75).toFixed(0)}</td>
+      <td>$${percentile(sp,90).toFixed(0)}</td>`;
+    body.appendChild(tr);
+  });
+}
+function renderMiniCompare(){
+  const body=document.getElementById('miniCompareBody');body.innerHTML='';
+  GAMES.forEach(g=>{
+    const d=generateSynthetic(g,S.lookbackVal);const sp=d.payers.map(u=>u.totalSpend);
+    const tr=document.createElement('tr');tr.style.cursor='pointer';
+    tr.onclick=()=>{S.activeGame=g.id;S._cache={};renderGamePills();runAnalysis();};
+    const mp=d.truePayerCount||d.payerCount;
+    tr.innerHTML=`<td style="padding:4px 6px;font-weight:${g.id===S.activeGame?'700':'400'};color:${g.id===S.activeGame?g.color:'var(--text)'}">${g.emoji} ${g.name}</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">${(mp/d.totalUsers*100).toFixed(1)}%</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$${mp?(d.totalRevenue/mp).toFixed(1):'—'}</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$${percentile(sp,50).toFixed(0)}</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$${percentile(sp,90).toFixed(0)}</td>`;
+    body.appendChild(tr);
+  });
+}
+
+// ─── DATA SOURCE MODAL ────────────────────────────────────────────────────────
+function openDsModal(){
+  renderParamTable();
+  document.getElementById('dsModal').style.display='flex';
+}
+function closeDsModal(){document.getElementById('dsModal').style.display='none';}
+function switchDsTab(tab){
+  document.getElementById('dsp-synthetic').style.display=tab==='synthetic'?'':'none';
+  document.getElementById('dsp-csv').style.display=tab==='csv'?'':'none';
+  document.getElementById('dst-synthetic').classList.toggle('active',tab==='synthetic');
+  document.getElementById('dst-csv').classList.toggle('active',tab==='csv');
+}
+
+function renderParamTable(){
+  const body=document.getElementById('paramBody');body.innerHTML='';
+  GAMES.forEach(g=>{
+    const arppu=(g.avgPrice*g.avgTxns).toFixed(1);
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td style="font-weight:600;color:${g.color}">${g.emoji} ${g.name}</td>
+      <td style="text-align:right"><input class="param-input" type="number" min="1000" value="${g.dau}" onchange="S._pendingParams['${g.id}_dau']=+this.value"></td>
+      <td style="text-align:right"><input class="param-input" type="number" min="0.1" max="20" step="0.1" value="${(g.convRate*100).toFixed(1)}" onchange="S._pendingParams['${g.id}_conv']=+this.value/100"></td>
+      <td style="text-align:right"><input class="param-input" type="number" min="0.5" step="0.1" value="${g.avgPrice.toFixed(2)}" onchange="S._pendingParams['${g.id}_avgPrice']=+this.value"></td>
+      <td style="text-align:right"><input class="param-input" type="number" min="1" step="0.1" value="${g.avgTxns.toFixed(1)}" onchange="S._pendingParams['${g.id}_avgTxns']=+this.value"></td>
+      <td style="text-align:right;color:var(--text3);font-weight:600">$${arppu}</td>`;
+    body.appendChild(tr);
+  });
+}
+
+function applyParams(){
+  for(const[key,val]of Object.entries(S._pendingParams)){
+    const [gid,field]=key.split('_');
+    const g=GAMES.find(x=>x.id===gid);
+    if(g&&field==='dau') g.dau=val;
+    else if(g&&field==='conv') g.convRate=val;
+    else if(g&&field==='avgPrice') g.avgPrice=val;
+    else if(g&&field==='avgTxns') g.avgTxns=val;
+  }
+  S._pendingParams={};
+  S._cache={};
+  S.dataSource='synthetic';
+  updateDsBadge();
+  closeDsModal();
+  runAnalysis();
+}
+
+function resetParams(){GAMES=JSON.parse(JSON.stringify(DEFAULT_GAMES));S._cache={};renderParamTable();}
+
+// ─── CSV HANDLERS ─────────────────────────────────────────────────────────────
+function onDrop(e){e.preventDefault();document.getElementById('dropZone').classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f)readCsvFile(f);}
+function onFileSelect(e){const f=e.target.files[0];if(f)readCsvFile(f);}
+function readCsvFile(file){
+  if(file.size>10*1024*1024){alert('File too large (max 10MB)');return;}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const parsed=parseCsv(e.target.result);
+      S._pendingCsv={...parsed,fileName:file.name};
+      showCsvPreview(S._pendingCsv);
+    }catch(err){alert('CSV parse error: '+err.message);}
+  };
+  reader.readAsText(file);
+}
+function showCsvPreview(d){
+  const preview=document.getElementById('csvPreview');preview.style.display='';
+  document.getElementById('csvStatus').innerHTML=`✅ <b>${d.fileName}</b> — ${d.payerCount.toLocaleString()} payers · $${fmtK(Math.round(d.totalRevenue))} revenue · ${fmtK(d.totalPurchases)} transactions · format: ${d.format}`;
+  const sample=d.payers.slice(0,5);
+  document.getElementById('csvPreviewTable').innerHTML=`<table style="border-collapse:collapse;width:100%"><thead><tr><th style="text-align:left;padding:3px 8px;color:var(--text3)">User ID</th><th style="text-align:right;padding:3px 8px;color:var(--text3)">Total Spend</th><th style="text-align:right;padding:3px 8px;color:var(--text3)">Purchases</th></tr></thead><tbody>${sample.map(u=>`<tr><td style="padding:3px 8px;font-family:monospace;font-size:11px">${u.uid}</td><td style="text-align:right;padding:3px 8px">$${u.totalSpend.toFixed(2)}</td><td style="text-align:right;padding:3px 8px">${u.purchaseCount}</td></tr>`).join('')}</tbody></table>${d.payers.length>5?`<div style="font-size:11px;color:var(--text3);margin-top:6px">… and ${d.payers.length-5} more rows</div>`:''}`;
+  document.getElementById('csvApplyBtn').style.display='';
+}
+function clearCsv(){S._pendingCsv=null;document.getElementById('csvPreview').style.display='none';document.getElementById('csvApplyBtn').style.display='none';document.getElementById('csvFile').value='';}
+function applyCsvData(){
+  if(!S._pendingCsv)return;
+  S.csvData=S._pendingCsv;
+  S.dataSource='csv';
+  updateDsBadge();
+  closeDsModal();
+  S._cache={};
+  const d=getActiveData();const b=computeBins(d,S.binSize);
+  S.segments=defaultSegments(b);renderSegRows(b);runAnalysis();
+}
+function updateDsBadge(){
+  const badge=document.getElementById('dsBadge');
+  if(S.dataSource==='csv'){
+    badge.classList.add('csv-active');
+    document.getElementById('dsIcon').textContent='📂';
+    document.getElementById('dsLabel').textContent=S.csvData?.fileName||'CSV';
+  } else {
+    badge.classList.remove('csv-active');
+    document.getElementById('dsIcon').textContent='📊';
+    document.getElementById('dsLabel').textContent='Real Data';
+  }
+}
+
+// ─── THEME ────────────────────────────────────────────────────────────────────
+function setTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  ['dark','dim','light'].forEach(x=>document.getElementById('tbtn-'+x).classList.toggle('active',x===t));
+}
+
+// ─── GAME PILLS ───────────────────────────────────────────────────────────────
+function renderGamePills(){
+  document.getElementById('gamePills').innerHTML=GAMES.map(g=>
+    `<div class="game-pill${g.id===S.activeGame?' active':''}" onclick="switchGame('${g.id}')">${g.emoji} ${g.name}</div>`
+  ).join('');
+}
+function switchGame(id){S.activeGame=id;S._cache={};renderGamePills();runAnalysis();}
+
+// ─── PARAM CHANGE ────────────────────────────────────────────────────────────
+function onParamChange(){
+  const prevLookback=S.lookbackVal;
+  S.lookbackVal=parseInt(document.getElementById('lookbackVal').value);
+  S.binSize=parseInt(document.getElementById('binSize').value);
+  S.classPercentile=parseInt(document.getElementById('classPercentileSel').value);
+  document.getElementById('lookbackDisplay').textContent=S.lookbackVal;
+  // Only clear cache if lookback changed — that requires regenerating users.
+  // binSize and classPercentile changes reuse the same user set.
+  if(S.lookbackVal!==prevLookback)S._cache={};
+  // Use label-only bins to update segment dropdowns — no synchronous simulation needed
+  const b=computeBinLabels(S.binSize);const n=b.length;
+  S.segments=S.segments.map(seg=>({...seg,startBucket:Math.min(seg.startBucket,n),endBucket:Math.min(seg.endBucket,n)}));
+  renderSegRows(b);runAnalysis();
+}
+
+// ─── TAB ──────────────────────────────────────────────────────────────────────
+function switchTab(name,el){
+  ['dist','charts','users','compare'].forEach(t=>document.getElementById('tab-'+t).style.display='none');
+  document.getElementById('tab-'+name).style.display='';
+  document.querySelectorAll('.rtab').forEach(e=>e.classList.remove('active'));el.classList.add('active');
+}
+
+// ─── UTILS ────────────────────────────────────────────────────────────────────
+function fmtK(n){if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1000)return(n/1000).toFixed(1)+'K';return String(n);}
+
+// ─── SAVE / LOAD ─────────────────────────────────────────────────────────────
+function save(){
+  try{
+    localStorage.setItem('seg-tool-v1',JSON.stringify({
+      activeGame:S.activeGame,
+      lookbackVal:S.lookbackVal,
+      binSize:S.binSize,
+      classPercentile:S.classPercentile,
+      segments:S.segments,
+      ghToken:GH_STATE.token,
+      ghUser:GH_STATE.user,
+      ghRepo:GH_STATE.repo,
+      ghLastPush:GH_STATE.lastPush,
+      _lastPushedHash:GH_STATE.lastHash,
+    }));
+  }catch(e){}
+}
+function load(){
+  try{
+    const d=JSON.parse(localStorage.getItem('seg-tool-v1')||'{}');
+    if(d.activeGame)S.activeGame=d.activeGame;
+    if(d.lookbackVal)S.lookbackVal=d.lookbackVal;
+    if(d.binSize)S.binSize=d.binSize;
+    if(d.classPercentile)S.classPercentile=d.classPercentile;
+    if(d.segments&&Array.isArray(d.segments)&&d.segments.length)S.segments=d.segments;
+    GH_STATE.token   = d.ghToken    || '';
+    GH_STATE.user    = d.ghUser     || '';
+    GH_STATE.repo    = d.ghRepo     || 'player-segmentation-tool';
+    GH_STATE.lastPush= d.ghLastPush || '';
+    GH_STATE.lastHash= d._lastPushedHash || 0;
+  }catch(e){}
+}
+
+// ── GITHUB SYNC ────────────────────────────────────────────────────────────────
+const GH_STATE={token:'',user:'',repo:'player-segmentation-tool',lastPush:'',lastVersion:'',lastHash:0};
+
+function showGitPanel(){
+  const p=document.getElementById('git-panel');if(!p)return;
+  const showing=p.style.display==='flex';
+  p.style.display=showing?'none':'flex';
+  if(!showing){
+    if(GH_STATE.token)document.getElementById('gh-token').value=GH_STATE.token;
+    if(GH_STATE.repo)document.getElementById('gh-repo').value=GH_STATE.repo;
+    if(GH_STATE.lastPush)document.getElementById('git-last-push').textContent='Last push: '+GH_STATE.lastPush;
+    if(GH_STATE.user){const s=document.getElementById('gh-status');if(s){s.innerHTML='✅ Connected as <b>'+GH_STATE.user+'</b>';s.style.color='#10b981';}}
+    _ghUpdateAutoStatus();
+  }
+}
+function _ghUpdateAutoStatus(){
+  const el=document.getElementById('git-auto-status');if(!el)return;
+  el.textContent=GH_STATE.token&&GH_STATE.repo
+    ?'🔄 Auto-push: on (30 min · on change)'
+    :'Auto-push: connect GitHub to enable';
+}
+async function ghVerifyToken(){
+  const token=(document.getElementById('gh-token').value||'').trim();
+  if(!token){alert('Paste your GitHub Personal Access Token.');return;}
+  const s=document.getElementById('gh-status');
+  s.textContent='⏳ Verifying…';s.style.color='#64748b';
+  try{
+    const r=await fetch('https://api.github.com/user',{headers:{'Authorization':'token '+token,'User-Agent':'Player Segmentation Tool'}});
+    if(!r.ok)throw new Error('Invalid token (HTTP '+r.status+')');
+    const u=await r.json();
+    GH_STATE.token=token;GH_STATE.user=u.login;
+    if(!GH_STATE.repo)GH_STATE.repo='player-segmentation-tool';
+    document.getElementById('gh-repo').value=GH_STATE.repo;
+    save();_ghUpdateAutoStatus();
+    s.innerHTML='✅ Connected as <b>'+u.login+'</b>';s.style.color='#10b981';
+    document.getElementById('git-btn-label').textContent=u.login;
+  }catch(e){s.textContent='❌ '+e.message;s.style.color='#ef4444';}
+}
+async function ghCreateRepo(){
+  if(!GH_STATE.token){alert('Verify your token first.');return;}
+  const name=(document.getElementById('gh-repo').value||'player-segmentation-tool').trim().replace(/\s+/g,'-');
+  const s=document.getElementById('gh-status');s.textContent='⏳ Creating…';s.style.color='#64748b';
+  try{
+    const r=await fetch('https://api.github.com/user/repos',{
+      method:'POST',
+      headers:{'Authorization':'token '+GH_STATE.token,'Content-Type':'application/json','User-Agent':'Player Segmentation Tool'},
+      body:JSON.stringify({name,description:'Player Segmentation Tool',private:false,auto_init:false})
+    });
+    const d=await r.json();if(!r.ok)throw new Error(d.message||'Failed');
+    GH_STATE.repo=name;document.getElementById('gh-repo').value=name;save();
+    s.innerHTML='🎉 Created! <a href="'+d.html_url+'" target="_blank" style="color:#6366f1">'+d.full_name+' ↗</a>';s.style.color='#10b981';
+  }catch(e){s.textContent='❌ '+e.message;s.style.color='#ef4444';}
+}
+async function _ghGetSha(hdrs,owner,repo,path){
+  try{const r=await fetch('https://api.github.com/repos/'+owner+'/'+repo+'/contents/'+path,{headers:hdrs});return r.ok?(await r.json()).sha:null;}catch{return null;}
+}
+async function _ghPutFile(hdrs,owner,repo,path,b64,msg,sha){
+  return fetch('https://api.github.com/repos/'+owner+'/'+repo+'/contents/'+path,{
+    method:'PUT',headers:hdrs,body:JSON.stringify({message:msg,content:b64,...(sha?{sha}:{})})
+  });
+}
+function _ghStateHash(){
+  const s=JSON.stringify(window._GH_STATE_DATA?.())||'{}';
+  let h=0;for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}return h;
+}
+async function _ghDoPush(label,silent){
+  const{token,user,repo}=GH_STATE;if(!token||!user||!repo)return false;
+  const s=silent?null:document.getElementById('gh-status');
+  if(s){s.textContent='⏳ Pushing…';s.style.color='#64748b';}
+  try{
+    const hdrs={'Authorization':'token '+token,'Content-Type':'application/json','User-Agent':'Player Segmentation Tool'};
+    const ts=new Date().toLocaleString();
+    const msg=(label?label+' — ':'')+ts;
+    const dataStr=typeof window._GH_GET_DATA==='function'
+      ?JSON.stringify(window._GH_GET_DATA(),null,2)
+      :'{}';
+    const dataB64=btoa(unescape(encodeURIComponent(dataStr)));
+    let html=document.documentElement.outerHTML;
+    html=html.replace(/
+
+
+<script id="baked-state">try{if(!localStorage.getItem("seg-tool-v1"))localStorage.setItem("seg-tool-v1","{\n  \"activeGame\": \"marble_sort\",\n  \"lookbackVal\": 30,\n  \"binSize\": 2,\n  \"classPercentile\": 75,\n  \"segments\": [\n    {\n      \"id\": 1,\n      \"name\": \"Low\",\n      \"color\": \"#3b82f6\",\n      \"startBucket\": 1,\n      \"endBucket\": 8\n    },\n    {\n      \"id\": 2,\n      \"name\": \"Mid\",\n      \"color\": \"#10b981\",\n      \"startBucket\": 9,\n      \"endBucket\": 16\n    },\n    {\n      \"id\": 3,\n      \"name\": \"High\",\n      \"color\": \"#f97316\",\n      \"startBucket\": 17,\n      \"endBucket\": 26\n    }\n  ]\n}");}catch(e){}</script>
+</body></html>
