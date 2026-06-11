@@ -1,4 +1,4 @@
-<html lang="en" data-theme="light"><head>
+<html lang="en" data-theme="dark"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Player Segmentation Tool — Voodoo</title>
@@ -62,8 +62,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .card-title{font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;display:flex;align-items:center;gap:8px}
 
 /* MAIN LAYOUT */
-.main-layout{display:grid;grid-template-columns:1fr 400px;gap:16px;align-items:start}
-@media(max-width:1100px){.main-layout{grid-template-columns:1fr}}
+.main-layout{display:block}
 
 /* TABS */
 .rtab-row{display:flex;gap:4px;margin-bottom:14px;flex-wrap:wrap}
@@ -86,14 +85,15 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .bar-pct{font-size:11px;font-weight:700;min-width:34px;text-align:right}
 
 /* SEG BUILDER */
-.seg-row{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:9px 12px;margin-bottom:8px;transition:border-color .15s}
+.seg-row{display:flex;flex-direction:column;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;transition:border-color .15s}
 .seg-row:hover{border-color:#6366f1}
 .seg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
 .seg-lbl{font-size:10px;color:var(--text3);margin-bottom:2px;font-weight:600}
 .seg-sel{background:var(--surface3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:5px 7px;font-size:12px;font-weight:600;cursor:pointer;min-width:72px}
 .seg-sel:focus{outline:none;border-color:#6366f1}
-.seg-del{cursor:pointer;color:var(--text3);font-size:17px;padding:2px 4px;margin-left:auto;transition:color .15s;line-height:1}
+.seg-del{cursor:pointer;color:var(--text3);font-size:17px;padding:2px 4px;transition:color .15s;line-height:1}
 .seg-del:hover{color:#ef4444}
+.seg-name-input:focus{border-bottom-color:#6366f1!important}
 
 /* HBAR */
 .hbar-wrap{display:flex;flex-direction:column;gap:16px}
@@ -133,6 +133,12 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .btn-ghost{background:rgba(99,102,241,.1);color:#818cf8;border:1.5px solid rgba(99,102,241,.3)}.btn-ghost:hover{background:rgba(99,102,241,.2)}
 .btn-secondary{background:var(--surface3);color:var(--text);border:1px solid var(--border)}.btn-secondary:hover{background:var(--surface2)}
 .fi{padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;width:100%;box-sizing:border-box;background:var(--surface2);color:var(--text)}
+.fi:focus{outline:none;border-color:#6366f1}
+.sim-chip{padding:4px 10px;background:var(--surface3);border:1px solid var(--border);border-radius:20px;font-size:11px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .12s}
+.sim-chip:hover{background:#6366f122;border-color:#6366f155;color:#818cf8}
+.sim-row{display:grid;grid-template-columns:1fr auto auto;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border);font-size:13px;transition:background .1s}
+.sim-row:last-child{border-bottom:none}
+.sim-row:hover{background:var(--table-hover)}
 .btn-add{background:rgba(99,102,241,.08);color:#818cf8;border:1.5px dashed rgba(99,102,241,.3);width:100%;justify-content:center;border-radius:10px;padding:8px;font-size:13px}
 .btn-add:hover{background:rgba(99,102,241,.18)}
 
@@ -184,7 +190,10 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 </head>
 <body>
 <!-- ── GITHUB PANEL ── -->
-<div id="git-panel" style="display: none; position: fixed; top: 48px; right: 0px; width: 340px; background: var(--surface); border-top-color: ; border-top-style: ; border-top-width: ; border-right-color: ; border-right-style: ; border-right-width: ; border-bottom-color: ; border-bottom-style: ; border-bottom-width: ; border-image-source: ; border-image-slice: ; border-image-width: ; border-image-outset: ; border-image-repeat: ; border-left-width: medium; border-left-style: none; border-left-color: currentcolor; border-radius: 0px 0px 0px 12px; box-shadow: rgba(0, 0, 0, 0.15) -4px 8px 24px; z-index: 200; padding: 18px; flex-direction: column; gap: 10px;">
+<div id="git-panel" style="display:none;position:fixed;top:48px;right:0;width:340px;background:var(--surface);
+         border:1px solid var(--border);border-left:none;border-radius:0 0 0 12px;
+         box-shadow:-4px 8px 24px rgba(0,0,0,.15);z-index:200;padding:18px;
+         flex-direction:column;gap:10px">
   <div style="display:flex;align-items:center;gap:8px">
     <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
       <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
@@ -213,12 +222,12 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
     <button class="btn btn-sm btn-secondary" onclick="ghCreateRepo()" style="white-space:nowrap" title="Create new repo on GitHub">Create</button>
   </div>
   <input id="gh-commit-msg" placeholder="Label (optional — e.g. 'v2 update')" class="fi" style="font-size:12px">
-  <div id="gh-status" style="font-size: 12px; min-height: 16px; line-height: 1.4; color: rgb(16, 185, 129);">✅ Pushed! <a href="https://github.com/danieler12gmail/player-segmentation-tool" target="_blank" style="color:#6366f1">View on GitHub ↗</a></div>
+  <div id="gh-status" style="font-size:12px;min-height:16px;line-height:1.4"></div>
   <div style="border-top:1px solid var(--border);padding-top:10px;display:flex;gap:8px;align-items:center">
     <button class="btn btn-primary" style="flex:1" onclick="ghPush()">⬆ Push to GitHub</button>
   </div>
-  <div id="git-last-push" style="font-size:10px;color:var(--text2);text-align:center;min-height:14px">Last push: 6/10/2026, 11:11:57 AM</div>
-  <div id="git-auto-status" style="font-size:10px;color:var(--text2);text-align:center;min-height:12px">🔄 Auto-push: on (30 min · on change)</div>
+  <div id="git-last-push" style="font-size:10px;color:var(--text2);text-align:center;min-height:14px"></div>
+  <div id="git-auto-status" style="font-size:10px;color:var(--text2);text-align:center;min-height:12px"></div>
 </div>
 
 <!-- DATA SOURCE MODAL -->
@@ -309,9 +318,9 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 
   <!-- THEME TOGGLE -->
   <div class="theme-toggle">
-    <button class="theme-btn" id="tbtn-dark" title="Dark" onclick="setTheme('dark')">🌑</button>
+    <button class="theme-btn active" id="tbtn-dark" title="Dark" onclick="setTheme('dark')">🌑</button>
     <button class="theme-btn" id="tbtn-dim" title="Dim" onclick="setTheme('dim')">🌓</button>
-    <button class="theme-btn active" id="tbtn-light" title="Bright" onclick="setTheme('light')">☀️</button>
+    <button class="theme-btn" id="tbtn-light" title="Bright" onclick="setTheme('light')">☀️</button>
   </div>
   <!-- ── GITHUB SYNC BUTTONS ── -->
   <button id="quick-save-btn" onclick="quickGitSave()" title="Save &amp; push to GitHub" style="background:rgba(16,185,129,.2);border:1px solid rgba(16,185,129,.4);color:#6ee7b7;
@@ -334,26 +343,556 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
     </svg>
     <span id="git-btn-label">danieler12gmail</span>
   </button>
-  <span id="git-push-badge" style="display: none; font-size: 9px; background: rgb(16, 185, 129); color: white; padding: 1px 5px; border-radius: 8px; margin-left: -4px;">✓ pushed</span>
+  <span id="git-push-badge" style="display:none;font-size:9px;background:#10b981;color:white;
+           padding:1px 5px;border-radius:8px;margin-left:-4px">✓ pushed</span>
 </div>
 
 <div class="page">
-  <div class="game-pills" id="gamePills"><div class="game-pill" onclick="switchGame('marble_sort')">🔵 Marble Sort</div><div class="game-pill" onclick="switchGame('sand_loop')">⏳ Sand Loop</div><div class="game-pill" onclick="switchGame('loop_sort')">🔄 Loop Sort</div><div class="game-pill" onclick="switchGame('beads_out')">📿 Beads Out</div><div class="game-pill" onclick="switchGame('bounce_blast')">🏀 Bounce Blast</div><div class="game-pill active" onclick="switchGame('snacky_dash')">🍕 Snacky Dash</div></div>
+  <div class="game-pills" id="gamePills"><div class="game-pill active" onclick="switchGame('marble_sort')">🔵 Marble Sort</div><div class="game-pill" onclick="switchGame('sand_loop')">⏳ Sand Loop</div><div class="game-pill" onclick="switchGame('loop_sort')">🔄 Loop Sort</div><div class="game-pill" onclick="switchGame('beads_out')">📿 Beads Out</div><div class="game-pill" onclick="switchGame('bounce_blast')">🏀 Bounce Blast</div><div class="game-pill" onclick="switchGame('snacky_dash')">🍕 Snacky Dash</div></div>
   <div class="stats-strip" id="statsStrip">
-    <div class="stat-box"><div class="sv">26.8K</div><div class="sl">DAU</div></div>
-    <div class="stat-box"><div class="sv">3.3K</div><div class="sl">Paying Users</div></div>
-    <div class="stat-box"><div class="sv">2.3%</div><div class="sl">Conversion</div></div>
-    <div class="stat-box"><div class="sv">$0.61</div><div class="sl">ARPU</div></div>
-    <div class="stat-box"><div class="sv">$27.04</div><div class="sl">ARPPU</div></div>
-    <div class="stat-box"><div class="sv">$88.2K</div><div class="sl">Revenue</div></div>
-    <div class="stat-box"><div class="sv">14.8K</div><div class="sl">Transactions</div></div></div>
+    <div class="stat-box"><div class="sv">1.7M</div><div class="sl">DAU</div></div>
+    <div class="stat-box"><div class="sv">132.5K</div><div class="sl">Paying Users</div></div>
+    <div class="stat-box"><div class="sv">1.5%</div><div class="sl">Conversion</div></div>
+    <div class="stat-box"><div class="sv">$1.04</div><div class="sl">ARPU</div></div>
+    <div class="stat-box"><div class="sv">$70.49</div><div class="sl">ARPPU</div></div>
+    <div class="stat-box"><div class="sv">$9.3M</div><div class="sl">Revenue</div></div>
+    <div class="stat-box"><div class="sv">1.3M</div><div class="sl">Transactions</div></div></div>
 
   <div class="main-layout">
 
     <!-- LEFT COLUMN -->
     <div style="display:flex;flex-direction:column;gap:14px">
 
-      <!-- REF TABLE -->
+      <!-- RESULTS TABS -->
+      <div>
+        <div class="rtab-row">
+          <div class="rtab" onclick="switchTab('dist',this)">📋 Distribution</div>
+          <div class="rtab" onclick="switchTab('charts',this)">📈 Charts</div>
+          <div class="rtab" onclick="switchTab('users',this)">👤 User Sample</div>
+          <div class="rtab" onclick="switchTab('compare',this)">⚖️ Game Compare</div>
+          <div class="rtab active" onclick="switchTab('sim',this)">🧪 Simulator</div>
+        </div>
+
+        <!-- GENERATION PROGRESS BAR (hidden by default) -->
+        <div id="genProgress" style="margin-bottom: 12px; display: none;">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <span id="genProgressLabel" style="font-size:12px;font-weight:700;color:var(--text)">⚙️ Simulating 132.5K / 132.5K payers…</span>
+              <span id="genProgressPct" style="font-size:12px;font-weight:700;color:#818cf8">100%</span>
+            </div>
+            <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+              <div id="genProgressBar" style="height: 100%; width: 100%; background: linear-gradient(90deg, rgb(99, 102, 241), rgb(129, 140, 248)); border-radius: 3px; transition: width 0.1s;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-dist" style="display: none;">
+          <!-- Segment Thresholds (left) + Segment Results (right) -->
+          <div style="display:flex;gap:14px;align-items:start">
+
+            <!-- Segment Thresholds (left, fixed width) -->
+            <div class="card" style="width:280px;flex-shrink:0">
+              <div class="card-title">🪣 Segment Thresholds</div>
+              <div style="font-size:11px;color:var(--text3);margin-bottom:12px;line-height:1.6">
+                Pick <b style="color:var(--text2)">start</b> and <b style="color:var(--text2)">end bucket</b> for each segment. Table rows highlight instantly.
+              </div>
+              <div id="segRows"><div class="seg-row">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px">
+        <div class="seg-dot" style="background:#3b82f6;width:10px;height:10px"></div>
+        <input class="seg-name-input" value="Low" onchange="updateSeg(1,'name',this.value)" oninput="updateSeg(1,'name',this.value)" style="flex:1;background:none;border:none;border-bottom:1px solid var(--border);
+                 color:#3b82f6;font-weight:700;font-size:13px;padding:1px 2px;
+                 outline:none;cursor:text;min-width:0" title="Click to rename">
+        <span style="font-size:12px;font-weight:700;color:#3b82f6;white-space:nowrap">$0–&lt;$8</span>
+        <div class="seg-del" onclick="removeSeg(1)">×</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;padding-left:17px">
+        <div><div class="seg-lbl">Start</div><select class="seg-sel" onchange="updateSeg(1,'startBucket',this.value)"><option value="1" selected="">#1 $0–1</option><option value="2">#2 $1–2</option><option value="3">#3 $2–3</option><option value="4">#4 $3–4</option><option value="5">#5 $4–5</option><option value="6">#6 $5–6</option><option value="7">#7 $6–7</option><option value="8">#8 $7–8</option><option value="9">#9 $8–9</option><option value="10">#10 $9–10</option><option value="11">#11 $10–11</option><option value="12">#12 $11–12</option><option value="13">#13 $12–13</option><option value="14">#14 $13–14</option><option value="15">#15 $14–15</option><option value="16">#16 $15–16</option><option value="17">#17 $16–17</option><option value="18">#18 $17–18</option><option value="19">#19 $18–19</option><option value="20">#20 $19–20</option><option value="21">#21 $20–21</option><option value="22">#22 $21–22</option><option value="23">#23 $22–23</option><option value="24">#24 $23–24</option><option value="25">#25 $24–25</option><option value="26">#26 $25–26</option><option value="27">#27 $26–27</option><option value="28">#28 $27–28</option><option value="29">#29 $28–29</option><option value="30">#30 $29–30</option><option value="31">#31 $30–31</option><option value="32">#32 $31–32</option><option value="33">#33 $32–33</option><option value="34">#34 $33–34</option><option value="35">#35 $34–35</option><option value="36">#36 $35–36</option><option value="37">#37 $36–37</option><option value="38">#38 $37–38</option><option value="39">#39 $38–39</option><option value="40">#40 $39–40</option><option value="41">#41 $40–41</option><option value="42">#42 $41–42</option><option value="43">#43 $42–43</option><option value="44">#44 $43–44</option><option value="45">#45 $44–45</option><option value="46">#46 $45–46</option><option value="47">#47 $46–47</option><option value="48">#48 $47–48</option><option value="49">#49 $48–49</option><option value="50">#50 $49–50</option><option value="51">#51 $50+</option></select></div>
+        <div style="color:var(--text3);font-size:12px;margin-top:10px">→</div>
+        <div><div class="seg-lbl">End</div><select class="seg-sel" onchange="updateSeg(1,'endBucket',this.value)"><option value="1">#1 $0–1</option><option value="2">#2 $1–2</option><option value="3">#3 $2–3</option><option value="4">#4 $3–4</option><option value="5">#5 $4–5</option><option value="6">#6 $5–6</option><option value="7">#7 $6–7</option><option value="8" selected="">#8 $7–8</option><option value="9">#9 $8–9</option><option value="10">#10 $9–10</option><option value="11">#11 $10–11</option><option value="12">#12 $11–12</option><option value="13">#13 $12–13</option><option value="14">#14 $13–14</option><option value="15">#15 $14–15</option><option value="16">#16 $15–16</option><option value="17">#17 $16–17</option><option value="18">#18 $17–18</option><option value="19">#19 $18–19</option><option value="20">#20 $19–20</option><option value="21">#21 $20–21</option><option value="22">#22 $21–22</option><option value="23">#23 $22–23</option><option value="24">#24 $23–24</option><option value="25">#25 $24–25</option><option value="26">#26 $25–26</option><option value="27">#27 $26–27</option><option value="28">#28 $27–28</option><option value="29">#29 $28–29</option><option value="30">#30 $29–30</option><option value="31">#31 $30–31</option><option value="32">#32 $31–32</option><option value="33">#33 $32–33</option><option value="34">#34 $33–34</option><option value="35">#35 $34–35</option><option value="36">#36 $35–36</option><option value="37">#37 $36–37</option><option value="38">#38 $37–38</option><option value="39">#39 $38–39</option><option value="40">#40 $39–40</option><option value="41">#41 $40–41</option><option value="42">#42 $41–42</option><option value="43">#43 $42–43</option><option value="44">#44 $43–44</option><option value="45">#45 $44–45</option><option value="46">#46 $45–46</option><option value="47">#47 $46–47</option><option value="48">#48 $47–48</option><option value="49">#49 $48–49</option><option value="50">#50 $49–50</option><option value="51">#51 $50+</option></select></div>
+      </div></div><div class="seg-row">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px">
+        <div class="seg-dot" style="background:#10b981;width:10px;height:10px"></div>
+        <input class="seg-name-input" value="Mid" onchange="updateSeg(2,'name',this.value)" oninput="updateSeg(2,'name',this.value)" style="flex:1;background:none;border:none;border-bottom:1px solid var(--border);
+                 color:#10b981;font-weight:700;font-size:13px;padding:1px 2px;
+                 outline:none;cursor:text;min-width:0" title="Click to rename">
+        <span style="font-size:12px;font-weight:700;color:#10b981;white-space:nowrap">$8–&lt;$16</span>
+        <div class="seg-del" onclick="removeSeg(2)">×</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;padding-left:17px">
+        <div><div class="seg-lbl">Start</div><select class="seg-sel" onchange="updateSeg(2,'startBucket',this.value)"><option value="1">#1 $0–1</option><option value="2">#2 $1–2</option><option value="3">#3 $2–3</option><option value="4">#4 $3–4</option><option value="5">#5 $4–5</option><option value="6">#6 $5–6</option><option value="7">#7 $6–7</option><option value="8">#8 $7–8</option><option value="9" selected="">#9 $8–9</option><option value="10">#10 $9–10</option><option value="11">#11 $10–11</option><option value="12">#12 $11–12</option><option value="13">#13 $12–13</option><option value="14">#14 $13–14</option><option value="15">#15 $14–15</option><option value="16">#16 $15–16</option><option value="17">#17 $16–17</option><option value="18">#18 $17–18</option><option value="19">#19 $18–19</option><option value="20">#20 $19–20</option><option value="21">#21 $20–21</option><option value="22">#22 $21–22</option><option value="23">#23 $22–23</option><option value="24">#24 $23–24</option><option value="25">#25 $24–25</option><option value="26">#26 $25–26</option><option value="27">#27 $26–27</option><option value="28">#28 $27–28</option><option value="29">#29 $28–29</option><option value="30">#30 $29–30</option><option value="31">#31 $30–31</option><option value="32">#32 $31–32</option><option value="33">#33 $32–33</option><option value="34">#34 $33–34</option><option value="35">#35 $34–35</option><option value="36">#36 $35–36</option><option value="37">#37 $36–37</option><option value="38">#38 $37–38</option><option value="39">#39 $38–39</option><option value="40">#40 $39–40</option><option value="41">#41 $40–41</option><option value="42">#42 $41–42</option><option value="43">#43 $42–43</option><option value="44">#44 $43–44</option><option value="45">#45 $44–45</option><option value="46">#46 $45–46</option><option value="47">#47 $46–47</option><option value="48">#48 $47–48</option><option value="49">#49 $48–49</option><option value="50">#50 $49–50</option><option value="51">#51 $50+</option></select></div>
+        <div style="color:var(--text3);font-size:12px;margin-top:10px">→</div>
+        <div><div class="seg-lbl">End</div><select class="seg-sel" onchange="updateSeg(2,'endBucket',this.value)"><option value="1">#1 $0–1</option><option value="2">#2 $1–2</option><option value="3">#3 $2–3</option><option value="4">#4 $3–4</option><option value="5">#5 $4–5</option><option value="6">#6 $5–6</option><option value="7">#7 $6–7</option><option value="8">#8 $7–8</option><option value="9">#9 $8–9</option><option value="10">#10 $9–10</option><option value="11">#11 $10–11</option><option value="12">#12 $11–12</option><option value="13">#13 $12–13</option><option value="14">#14 $13–14</option><option value="15">#15 $14–15</option><option value="16" selected="">#16 $15–16</option><option value="17">#17 $16–17</option><option value="18">#18 $17–18</option><option value="19">#19 $18–19</option><option value="20">#20 $19–20</option><option value="21">#21 $20–21</option><option value="22">#22 $21–22</option><option value="23">#23 $22–23</option><option value="24">#24 $23–24</option><option value="25">#25 $24–25</option><option value="26">#26 $25–26</option><option value="27">#27 $26–27</option><option value="28">#28 $27–28</option><option value="29">#29 $28–29</option><option value="30">#30 $29–30</option><option value="31">#31 $30–31</option><option value="32">#32 $31–32</option><option value="33">#33 $32–33</option><option value="34">#34 $33–34</option><option value="35">#35 $34–35</option><option value="36">#36 $35–36</option><option value="37">#37 $36–37</option><option value="38">#38 $37–38</option><option value="39">#39 $38–39</option><option value="40">#40 $39–40</option><option value="41">#41 $40–41</option><option value="42">#42 $41–42</option><option value="43">#43 $42–43</option><option value="44">#44 $43–44</option><option value="45">#45 $44–45</option><option value="46">#46 $45–46</option><option value="47">#47 $46–47</option><option value="48">#48 $47–48</option><option value="49">#49 $48–49</option><option value="50">#50 $49–50</option><option value="51">#51 $50+</option></select></div>
+      </div></div><div class="seg-row">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px">
+        <div class="seg-dot" style="background:#f97316;width:10px;height:10px"></div>
+        <input class="seg-name-input" value="High" onchange="updateSeg(3,'name',this.value)" oninput="updateSeg(3,'name',this.value)" style="flex:1;background:none;border:none;border-bottom:1px solid var(--border);
+                 color:#f97316;font-weight:700;font-size:13px;padding:1px 2px;
+                 outline:none;cursor:text;min-width:0" title="Click to rename">
+        <span style="font-size:12px;font-weight:700;color:#f97316;white-space:nowrap">$16–&lt;$26</span>
+        <div class="seg-del" onclick="removeSeg(3)">×</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;padding-left:17px">
+        <div><div class="seg-lbl">Start</div><select class="seg-sel" onchange="updateSeg(3,'startBucket',this.value)"><option value="1">#1 $0–1</option><option value="2">#2 $1–2</option><option value="3">#3 $2–3</option><option value="4">#4 $3–4</option><option value="5">#5 $4–5</option><option value="6">#6 $5–6</option><option value="7">#7 $6–7</option><option value="8">#8 $7–8</option><option value="9">#9 $8–9</option><option value="10">#10 $9–10</option><option value="11">#11 $10–11</option><option value="12">#12 $11–12</option><option value="13">#13 $12–13</option><option value="14">#14 $13–14</option><option value="15">#15 $14–15</option><option value="16">#16 $15–16</option><option value="17" selected="">#17 $16–17</option><option value="18">#18 $17–18</option><option value="19">#19 $18–19</option><option value="20">#20 $19–20</option><option value="21">#21 $20–21</option><option value="22">#22 $21–22</option><option value="23">#23 $22–23</option><option value="24">#24 $23–24</option><option value="25">#25 $24–25</option><option value="26">#26 $25–26</option><option value="27">#27 $26–27</option><option value="28">#28 $27–28</option><option value="29">#29 $28–29</option><option value="30">#30 $29–30</option><option value="31">#31 $30–31</option><option value="32">#32 $31–32</option><option value="33">#33 $32–33</option><option value="34">#34 $33–34</option><option value="35">#35 $34–35</option><option value="36">#36 $35–36</option><option value="37">#37 $36–37</option><option value="38">#38 $37–38</option><option value="39">#39 $38–39</option><option value="40">#40 $39–40</option><option value="41">#41 $40–41</option><option value="42">#42 $41–42</option><option value="43">#43 $42–43</option><option value="44">#44 $43–44</option><option value="45">#45 $44–45</option><option value="46">#46 $45–46</option><option value="47">#47 $46–47</option><option value="48">#48 $47–48</option><option value="49">#49 $48–49</option><option value="50">#50 $49–50</option><option value="51">#51 $50+</option></select></div>
+        <div style="color:var(--text3);font-size:12px;margin-top:10px">→</div>
+        <div><div class="seg-lbl">End</div><select class="seg-sel" onchange="updateSeg(3,'endBucket',this.value)"><option value="1">#1 $0–1</option><option value="2">#2 $1–2</option><option value="3">#3 $2–3</option><option value="4">#4 $3–4</option><option value="5">#5 $4–5</option><option value="6">#6 $5–6</option><option value="7">#7 $6–7</option><option value="8">#8 $7–8</option><option value="9">#9 $8–9</option><option value="10">#10 $9–10</option><option value="11">#11 $10–11</option><option value="12">#12 $11–12</option><option value="13">#13 $12–13</option><option value="14">#14 $13–14</option><option value="15">#15 $14–15</option><option value="16">#16 $15–16</option><option value="17">#17 $16–17</option><option value="18">#18 $17–18</option><option value="19">#19 $18–19</option><option value="20">#20 $19–20</option><option value="21">#21 $20–21</option><option value="22">#22 $21–22</option><option value="23">#23 $22–23</option><option value="24">#24 $23–24</option><option value="25">#25 $24–25</option><option value="26" selected="">#26 $25–26</option><option value="27">#27 $26–27</option><option value="28">#28 $27–28</option><option value="29">#29 $28–29</option><option value="30">#30 $29–30</option><option value="31">#31 $30–31</option><option value="32">#32 $31–32</option><option value="33">#33 $32–33</option><option value="34">#34 $33–34</option><option value="35">#35 $34–35</option><option value="36">#36 $35–36</option><option value="37">#37 $36–37</option><option value="38">#38 $37–38</option><option value="39">#39 $38–39</option><option value="40">#40 $39–40</option><option value="41">#41 $40–41</option><option value="42">#42 $41–42</option><option value="43">#43 $42–43</option><option value="44">#44 $43–44</option><option value="45">#45 $44–45</option><option value="46">#46 $45–46</option><option value="47">#47 $46–47</option><option value="48">#48 $47–48</option><option value="49">#49 $48–49</option><option value="50">#50 $49–50</option><option value="51">#51 $50+</option></select></div>
+      </div></div><div id="seg-coverage-warning">
+      <div style="margin-top:10px;padding:10px 12px;background:rgba(239,68,68,.1);
+                  border:1px solid rgba(239,68,68,.35);border-radius:8px;font-size:12px;
+                  color:#f87171;line-height:1.5">
+        <b>⚠ Coverage gap:</b> Buckets <b>#27–#51</b> ($26+) are unassigned —
+        players in those price ranges won't appear in any segment.
+        <span style="opacity:.7;display:block;margin-top:3px;font-size:11px">
+          Extend a segment end or add a new segment to cover the full range.
+        </span>
+      </div></div></div>
+              <button class="btn btn-add" onclick="addSegment()">+ Add Segment</button>
+              <div style="margin-top:10px">
+                <button class="btn btn-ghost" style="width:100%;font-size:12px;justify-content:center" onclick="resetSegments()">↺ Reset to Defaults</button>
+              </div>
+            </div>
+
+            <!-- Segment Results (right, grows) -->
+            <div class="card" style="flex:1;min-width:0">
+              <div class="card-title">🎯 Segment Results</div>
+              <div class="legend" style="margin-bottom:14px">
+                <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>% of IAP</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>% of PDAU</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>% of Transactions</div>
+              </div>
+              <div class="hbar-wrap" id="hbarWrap"><div class="hbar-seg"><div class="hbar-name" style="color:#3b82f6">Low <span style="font-weight:400;color:var(--text3);font-size:11px">$0–&lt;$8 · #1–#8</span></div>
+      <div class="hbar-metric"><div class="hbar-mlabel">% of IAP</div>
+  <div class="hbar-bg"><div class="hbar-fill" style="width:48.44173738015285%;background:#3b82f6"></div>
+    <div class="grid-line" style="left:25%"></div><div class="grid-line" style="left:50%"></div><div class="grid-line" style="left:75%"></div></div>
+  <div class="hbar-val" style="color:#3b82f6">48.4%</div></div><div class="hbar-metric"><div class="hbar-mlabel">% of PDAU</div>
+  <div class="hbar-bg"><div class="hbar-fill" style="width:59.2452573912256%;background:#ef4444"></div>
+    <div class="grid-line" style="left:25%"></div><div class="grid-line" style="left:50%"></div><div class="grid-line" style="left:75%"></div></div>
+  <div class="hbar-val" style="color:#ef4444">59.2%</div></div><div class="hbar-metric"><div class="hbar-mlabel">% of Transactions</div>
+  <div class="hbar-bg"><div class="hbar-fill" style="width:77.9180259299403%;background:#f59e0b"></div>
+    <div class="grid-line" style="left:25%"></div><div class="grid-line" style="left:50%"></div><div class="grid-line" style="left:75%"></div></div>
+  <div class="hbar-val" style="color:#f59e0b">77.9%</div></div></div><div class="hbar-seg"><div class="hbar-name" style="color:#10b981">Mid <span style="font-weight:400;color:var(--text3);font-size:11px">$8–&lt;$16 · #9–#16</span></div>
+      <div class="hbar-metric"><div class="hbar-mlabel">% of IAP</div>
+  <div class="hbar-bg"><div class="hbar-fill" style="width:25.37710259028411%;background:#3b82f6"></div>
+    <div class="grid-line" style="left:25%"></div><div class="grid-line" style="left:50%"></div><div class="grid-line" style="left:75%"></div></div>
+  <div class="hbar-val" style="color:#3b82f6">25.4%</div></div><div class="hbar-metric"><div class="hbar-mlabel">% of PDAU</div>
+  <div class="hbar-bg"><div class="hbar-fill" style="width:37.738639622100486%;background:#ef4444"></div>
+    <div class="grid-line" style="left:25%"></div><div class="grid-line" style="left:50%"></div><div class="grid-line" style="left:75%"></div></div>
+  <div class="hbar-val" style="color:#ef4444">37.7%</div></div><div class="hbar-metric"><div class="hbar-mlabel">% of Transactions</div>
+  <div class="hbar-bg"><div class="hbar-fill" style="width:15.798792981776732%;background:#f59e0b"></div>
+    <div class="grid-line" style="left:25%"></div><div class="grid-line" style="left:50%"></div><div class="grid-line" style="left:75%"></div></div>
+  <div class="hbar-val" style="color:#f59e0b">15.8%</div></div></div><div class="hbar-seg"><div class="hbar-name" style="color:#f97316">High <span style="font-weight:400;color:var(--text3);font-size:11px">$16–&lt;$26 · #17–#26</span></div>
+      <div class="hbar-metric"><div class="hbar-mlabel">% of IAP</div>
+  <div class="hbar-bg"><div class="hbar-fill" style="width:9.036609091496384%;background:#3b82f6"></div>
+    <div class="grid-line" style="left:25%"></div><div class="grid-line" style="left:50%"></div><div class="grid-line" style="left:75%"></div></div>
+  <div class="hbar-val" style="color:#3b82f6">9.0%</div></div><div class="hbar-metric"><div class="hbar-mlabel">% of PDAU</div>
+  <div class="hbar-bg"><div class="hbar-fill" style="width:2.5505199136747105%;background:#ef4444"></div>
+    <div class="grid-line" style="left:25%"></div><div class="grid-line" style="left:50%"></div><div class="grid-line" style="left:75%"></div></div>
+  <div class="hbar-val" style="color:#ef4444">2.6%</div></div><div class="hbar-metric"><div class="hbar-mlabel">% of Transactions</div>
+  <div class="hbar-bg"><div class="hbar-fill" style="width:3.1941583888069065%;background:#f59e0b"></div>
+    <div class="grid-line" style="left:25%"></div><div class="grid-line" style="left:50%"></div><div class="grid-line" style="left:75%"></div></div>
+  <div class="hbar-val" style="color:#f59e0b">3.2%</div></div></div></div>
+              <table class="rtable" style="margin-top:18px">
+                <thead><tr>
+                  <th>Segment</th><th>Range</th><th>Payers</th>
+                  <th style="color:#3b82f6">% IAP</th>
+                  <th style="color:#ef4444">% PDAU</th>
+                  <th style="color:#f59e0b">% Txns</th>
+                  <th>Avg $</th><th>Avg Txns</th>
+                </tr></thead>
+                <tbody id="resultBody"><tr><td><div class="bname"><div style="width:8px;height:8px;border-radius:50%;background:#3b82f6"></div>Low</div></td>
+      <td style="font-size:11px;color:var(--text2)">$0–&lt;$8</td>
+      <td style="font-weight:600">78,513</td>
+      <td style="font-weight:700;color:#3b82f6">48.4%</td>
+      <td style="font-weight:700;color:#ef4444">59.2%</td>
+      <td style="font-weight:700;color:#f59e0b">77.9%</td>
+      <td style="color:var(--text2)">$60.87</td>
+      <td style="color:var(--text2)">10.1</td></tr><tr><td><div class="bname"><div style="width:8px;height:8px;border-radius:50%;background:#10b981"></div>Mid</div></td>
+      <td style="font-size:11px;color:var(--text2)">$8–&lt;$16</td>
+      <td style="font-weight:600">50,012</td>
+      <td style="font-weight:700;color:#3b82f6">25.4%</td>
+      <td style="font-weight:700;color:#ef4444">37.7%</td>
+      <td style="font-weight:700;color:#f59e0b">15.8%</td>
+      <td style="color:var(--text2)">$84.19</td>
+      <td style="color:var(--text2)">10.1</td></tr><tr><td><div class="bname"><div style="width:8px;height:8px;border-radius:50%;background:#f97316"></div>High</div></td>
+      <td style="font-size:11px;color:var(--text2)">$16–&lt;$26</td>
+      <td style="font-weight:600">3,380</td>
+      <td style="font-weight:700;color:#3b82f6">9.0%</td>
+      <td style="font-weight:700;color:#ef4444">2.6%</td>
+      <td style="font-weight:700;color:#f59e0b">3.2%</td>
+      <td style="color:var(--text2)">$85.23</td>
+      <td style="color:var(--text2)">6.3</td></tr><tr style="opacity: 0.4;"><td><div class="bname"><div style="width:8px;height:8px;border-radius:50%;background:var(--text3)"></div>Unassigned</div></td>
+      <td style="color:var(--text3)">—</td><td style="font-weight:600">611</td>
+      <td style="color:var(--text3)">0.7%</td>
+      <td style="color:var(--text3)">0.5%</td>
+      <td style="color:var(--text3)">0.2%</td>
+      <td style="color:var(--text3)">—</td><td style="color:var(--text3)">—</td></tr></tbody>
+              </table>
+            </div>
+
+          </div>
+
+          <!-- Spend Percentiles (full width, below) -->
+          <div class="card" style="margin-top:14px">
+            <div class="card-title">📐 Spend Percentiles</div>
+            <div class="perc-grid" id="percCards">
+    <div class="perc-card" style="grid-column:1/-1;background:rgba(99,102,241,.08);border-color:rgba(99,102,241,.2)">
+      <div class="perc-label" style="color:#818cf8">Classification metric</div>
+      <div style="font-size:14px;font-weight:700;margin-top:2px">P75 of each user's purchases</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:2px">Users bucketed by their personal P75 transaction price</div>
+    </div>
+    <div class="perc-card"><div class="perc-label">P50 of pop.</div><div class="perc-val">$8</div></div>
+    <div class="perc-card"><div class="perc-label">P75 of pop.</div><div class="perc-val">$10</div></div>
+    <div class="perc-card"><div class="perc-label">P90 of pop.</div><div class="perc-val">$11</div></div>
+    <div class="perc-card"><div class="perc-label">P95 of pop.</div><div class="perc-val">$15</div></div></div>
+            <div class="cw-sm"><canvas id="percChart" style="box-sizing: border-box; display: block; height: 0px; width: 0px;" width="0" height="0"></canvas></div>
+          </div>
+
+          <!-- All Games Quick KPIs (full width, below percentiles) -->
+          <div class="card" style="margin-top:14px">
+            <div class="card-title">⚖️ All Games — Quick KPIs</div>
+            <table style="width:100%;border-collapse:collapse;font-size:12px">
+              <thead><tr>
+                <th style="text-align:left;padding:6px 8px;color:var(--text3);border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase">Game</th>
+                <th style="padding:6px 8px;color:var(--text3);border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase;text-align:center">Conv%</th>
+                <th style="padding:6px 8px;color:var(--text3);border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase;text-align:center">ARPPU</th>
+                <th style="padding:6px 8px;color:var(--text3);border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase;text-align:center">P50</th>
+                <th style="padding:6px 8px;color:var(--text3);border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase;text-align:center">P90</th>
+              </tr></thead>
+              <tbody id="miniCompareBody"><tr style="cursor: pointer;"><td style="padding:4px 6px;font-weight:700;color:#6366f1">🔵 Marble Sort</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">1.5%</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$70.1</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$55</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$135</td></tr><tr style="cursor: pointer;"><td style="padding:4px 6px;font-weight:400;color:var(--text)">⏳ Sand Loop</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">3.8%</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$46.0</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$37</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$90</td></tr><tr style="cursor: pointer;"><td style="padding:4px 6px;font-weight:400;color:var(--text)">🔄 Loop Sort</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">3.2%</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$48.9</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$40</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$96</td></tr><tr style="cursor: pointer;"><td style="padding:4px 6px;font-weight:400;color:var(--text)">📿 Beads Out</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">2.0%</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$56.3</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$47</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$104</td></tr><tr style="cursor: pointer;"><td style="padding:4px 6px;font-weight:400;color:var(--text)">🏀 Bounce Blast</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">3.5%</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$52.5</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$42</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$101</td></tr><tr style="cursor: pointer;"><td style="padding:4px 6px;font-weight:400;color:var(--text)">🍕 Snacky Dash</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">2.3%</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$27.2</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$22</td>
+      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$53</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="tab-charts" style="display:none">
+          <div class="donuts-grid">
+            <div class="card"><div class="card-title">👥 DAU % by Segment</div><div class="cw"><canvas id="dauChart" style="box-sizing: border-box; display: block; height: 0px; width: 0px;" width="0" height="0"></canvas></div></div>
+            <div class="card"><div class="card-title">💰 Revenue % by Segment</div><div class="cw"><canvas id="revChart" style="box-sizing: border-box; display: block; height: 0px; width: 0px;" width="0" height="0"></canvas></div></div>
+            <div class="card"><div class="card-title">🛒 Transactions %</div><div class="cw"><canvas id="txnChart" style="box-sizing: border-box; display: block; height: 0px; width: 0px;" width="0" height="0"></canvas></div></div>
+          </div>
+          <div class="card" style="margin-top:14px">
+            <div class="card-title">📊 All Metrics Compared</div>
+            <div style="height:300px;position:relative"><canvas id="barChart" style="box-sizing: border-box; display: block; height: 0px; width: 0px;" width="0" height="0"></canvas></div>
+          </div>
+        </div>
+
+        <div id="tab-users" style="display:none">
+          <div class="card">
+            <div class="card-title">🔍 User Sample — Top 8 per Segment</div>
+            <div style="overflow-x:auto">
+              <table class="utab">
+                <thead><tr>
+                  <th>User ID</th><th>Segment</th><th>Total Spend</th><th>Purchases</th><th>Avg Price</th><th>Days Active</th>
+                </tr></thead>
+                <tbody id="userBody"><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U201F03</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#3b82f6"></div>Low</div></td>
+        <td style="font-weight:600">$30.94</td>
+        <td>6</td>
+        <td>$5.16</td>
+        <td>2d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U8DBD78</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#3b82f6"></div>Low</div></td>
+        <td style="font-weight:600">$44.94</td>
+        <td>6</td>
+        <td>$7.49</td>
+        <td>15d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U81F853</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#3b82f6"></div>Low</div></td>
+        <td style="font-weight:600">$28.93</td>
+        <td>7</td>
+        <td>$4.13</td>
+        <td>22d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U2532C3</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#3b82f6"></div>Low</div></td>
+        <td style="font-weight:600">$103.80</td>
+        <td>20</td>
+        <td>$5.19</td>
+        <td>3d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U370623</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#3b82f6"></div>Low</div></td>
+        <td style="font-weight:600">$23.97</td>
+        <td>3</td>
+        <td>$7.99</td>
+        <td>23d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U5D6DB9</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#3b82f6"></div>Low</div></td>
+        <td style="font-weight:600">$23.94</td>
+        <td>6</td>
+        <td>$3.99</td>
+        <td>23d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U856B64</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#3b82f6"></div>Low</div></td>
+        <td style="font-weight:600">$27.93</td>
+        <td>7</td>
+        <td>$3.99</td>
+        <td>12d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U3CCBC0</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#3b82f6"></div>Low</div></td>
+        <td style="font-weight:600">$40.93</td>
+        <td>7</td>
+        <td>$5.85</td>
+        <td>23d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U73C43F</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>Mid</div></td>
+        <td style="font-weight:600">$124.83</td>
+        <td>17</td>
+        <td>$7.34</td>
+        <td>6d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U5B779C</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>Mid</div></td>
+        <td style="font-weight:600">$41.92</td>
+        <td>8</td>
+        <td>$5.24</td>
+        <td>8d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U710042</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>Mid</div></td>
+        <td style="font-weight:600">$53.91</td>
+        <td>9</td>
+        <td>$5.99</td>
+        <td>21d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U150795</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>Mid</div></td>
+        <td style="font-weight:600">$88.90</td>
+        <td>10</td>
+        <td>$8.89</td>
+        <td>23d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U443628</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>Mid</div></td>
+        <td style="font-weight:600">$57.92</td>
+        <td>8</td>
+        <td>$7.24</td>
+        <td>5d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U27578F</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>Mid</div></td>
+        <td style="font-weight:600">$69.88</td>
+        <td>12</td>
+        <td>$5.82</td>
+        <td>12d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U6DE279</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>Mid</div></td>
+        <td style="font-weight:600">$21.96</td>
+        <td>4</td>
+        <td>$5.49</td>
+        <td>25d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U73EB6E</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>Mid</div></td>
+        <td style="font-weight:600">$111.85</td>
+        <td>15</td>
+        <td>$7.46</td>
+        <td>2d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U3129DE</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#f97316"></div>High</div></td>
+        <td style="font-weight:600">$128.88</td>
+        <td>12</td>
+        <td>$10.74</td>
+        <td>17d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U8E8FFD</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#f97316"></div>High</div></td>
+        <td style="font-weight:600">$31.98</td>
+        <td>2</td>
+        <td>$15.99</td>
+        <td>24d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U2FB091</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#f97316"></div>High</div></td>
+        <td style="font-weight:600">$74.92</td>
+        <td>8</td>
+        <td>$9.37</td>
+        <td>2d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U1AF459</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#f97316"></div>High</div></td>
+        <td style="font-weight:600">$162.88</td>
+        <td>12</td>
+        <td>$13.57</td>
+        <td>13d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U13319A</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#f97316"></div>High</div></td>
+        <td style="font-weight:600">$88.93</td>
+        <td>7</td>
+        <td>$12.70</td>
+        <td>24d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U642699</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#f97316"></div>High</div></td>
+        <td style="font-weight:600">$147.87</td>
+        <td>13</td>
+        <td>$11.37</td>
+        <td>8d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U156B20</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#f97316"></div>High</div></td>
+        <td style="font-weight:600">$86.92</td>
+        <td>8</td>
+        <td>$10.86</td>
+        <td>20d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U7A5CBD</td>
+        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#f97316"></div>High</div></td>
+        <td style="font-weight:600">$158.89</td>
+        <td>11</td>
+        <td>$14.44</td>
+        <td>1d</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SIMULATOR TAB ── -->
+        <div id="tab-sim" style="">
+          <div style="display:flex;gap:14px;align-items:start">
+
+            <!-- Purchase History input -->
+            <div class="card" style="flex:1;min-width:0">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+                <div class="card-title" style="margin-bottom:0">📝 Purchase History</div>
+                <button onclick="clearSim()" style="font-size:11px;color:var(--text3);background:none;border:none;cursor:pointer;padding:2px 6px;border-radius:4px" title="Clear all">Clear all</button>
+              </div>
+              <p style="font-size:12px;color:var(--text3);margin-bottom:14px;line-height:1.5">Enter IAP history for a hypothetical user. They'll be classified into your segments in real-time.</p>
+
+              <!-- Add purchase row -->
+              <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
+                <input type="date" id="simDate" class="fi" style="width:150px;font-size:12px">
+                <div style="position:relative;flex:1">
+                  <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px;pointer-events:none">$</span>
+                  <input type="number" id="simPrice" class="fi" placeholder="Price" step="0.01" min="0.01" style="padding-left:22px;font-size:13px" onkeydown="if(event.key==='Enter')addSimRow()">
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="addSimRow()" style="white-space:nowrap">+ Add</button>
+              </div>
+
+              <!-- Quick price chips -->
+              <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:16px">
+                <span style="font-size:10px;color:var(--text3);align-self:center;margin-right:2px;text-transform:uppercase;letter-spacing:.5px">Quick:</span>
+                <button class="sim-chip" onclick="setSimPrice(0.99)">$0.99</button>
+                <button class="sim-chip" onclick="setSimPrice(1.99)">$1.99</button>
+                <button class="sim-chip" onclick="setSimPrice(2.99)">$2.99</button>
+                <button class="sim-chip" onclick="setSimPrice(4.99)">$4.99</button>
+                <button class="sim-chip" onclick="setSimPrice(7.99)">$7.99</button>
+                <button class="sim-chip" onclick="setSimPrice(9.99)">$9.99</button>
+                <button class="sim-chip" onclick="setSimPrice(14.99)">$14.99</button>
+                <button class="sim-chip" onclick="setSimPrice(19.99)">$19.99</button>
+                <button class="sim-chip" onclick="setSimPrice(29.99)">$29.99</button>
+              </div>
+
+              <!-- Empty state -->
+              <div id="simEmpty" style="text-align:center;padding:32px 16px;color:var(--text3);font-size:12px;line-height:1.8">
+                <div style="font-size:28px;margin-bottom:8px">📭</div>
+                No purchases yet<br>Add some using the fields above
+              </div>
+
+              <!-- Purchase list -->
+              <div id="simList" style="display:none;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px">
+                <div style="display:grid;grid-template-columns:1fr auto auto;gap:0;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);padding:7px 12px;border-bottom:1px solid var(--border);background:var(--surface2)">
+                  <span>Date</span><span style="text-align:right;padding-right:12px">Price</span><span></span>
+                </div>
+                <div id="simListBody" style="max-height:340px;overflow-y:auto"></div>
+              </div>
+
+              <!-- Stats strip -->
+              <div id="simStats" style="display:none;display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-top:4px">
+                <div style="background:var(--surface);padding:10px;text-align:center">
+                  <div style="font-size:17px;font-weight:800;color:var(--text)" id="simStatCount">—</div>
+                  <div style="font-size:10px;color:var(--text3);margin-top:2px">Purchases</div>
+                </div>
+                <div style="background:var(--surface);padding:10px;text-align:center">
+                  <div style="font-size:17px;font-weight:800;color:var(--text)" id="simStatSpend">—</div>
+                  <div style="font-size:10px;color:var(--text3);margin-top:2px">Total Spend</div>
+                </div>
+                <div style="background:var(--surface);padding:10px;text-align:center">
+                  <div style="font-size:17px;font-weight:800;color:var(--text)" id="simStatAvg">—</div>
+                  <div style="font-size:10px;color:var(--text3);margin-top:2px">Avg Price</div>
+                </div>
+                <div style="background:var(--surface);padding:10px;text-align:center">
+                  <div style="font-size:17px;font-weight:800;color:var(--text)" id="simStatDays">—</div>
+                  <div style="font-size:10px;color:var(--text3);margin-top:2px">Days Active</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Results panel -->
+            <div style="width:300px;flex-shrink:0;display:flex;flex-direction:column;gap:14px">
+
+              <!-- Segment result (big) -->
+              <div class="card">
+                <div class="card-title">🎯 Segment Classification</div>
+                <div id="simSegResult" style="text-align:center;padding:16px 8px">
+    <div style="text-align:center;padding:16px 8px">
+      <div style="font-size:28px;margin-bottom:8px">👤</div>
+      <div style="font-size:12px;color:var(--text3)">Add purchases to classify this user</div>
+    </div></div>
+              </div>
+
+              <!-- Percentile breakdown -->
+              <div class="card">
+                <div class="card-title">📊 Price Percentiles</div>
+                <div id="simPercResult">
+    <div style="font-size:12px;color:var(--text3);text-align:center;padding:14px">Add purchases to see percentiles</div></div>
+              </div>
+
+              <!-- Spectrum bar -->
+              <div class="card" id="simSpectrumCard" style="display:none">
+                <div class="card-title">📍 Spend Spectrum</div>
+                <div id="simSpectrum" style="margin-top:4px"></div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-compare" style="display:none">
+          <div class="card">
+            <div class="card-title">⚖️ Cross-Game ARPPU &amp; Conversion</div>
+            <div style="height:300px;position:relative"><canvas id="compareChart" style="box-sizing: border-box; display: block; height: 0px; width: 0px;" width="0" height="0"></canvas></div>
+          </div>
+          <div class="card" style="margin-top:14px">
+            <div class="card-title">📊 KPI Summary — All Games</div>
+            <table class="rtable">
+              <thead><tr>
+                <th>Game</th><th>DAU</th><th>Payers</th><th>Conv%</th><th>ARPU</th><th>ARPPU</th><th>P50</th><th>P75</th><th>P90</th>
+              </tr></thead>
+              <tbody id="compareBody"><tr><td style="font-weight:700;color:#6366f1">🔵 Marble Sort</td>
+      <td>1.7M</td><td>132.5K</td>
+      <td>1.5%</td>
+      <td>$1.03</td>
+      <td>$70.12</td>
+      <td>$55</td>
+      <td>$90</td>
+      <td>$135</td></tr><tr><td style="font-weight:400;color:var(--text)">⏳ Sand Loop</td>
+      <td>373.5K</td><td>76.8K</td>
+      <td>3.8%</td>
+      <td>$1.75</td>
+      <td>$46.03</td>
+      <td>$37</td>
+      <td>$59</td>
+      <td>$90</td></tr><tr><td style="font-weight:400;color:var(--text)">🔄 Loop Sort</td>
+      <td>273.1K</td><td>46.6K</td>
+      <td>3.2%</td>
+      <td>$1.55</td>
+      <td>$48.89</td>
+      <td>$40</td>
+      <td>$64</td>
+      <td>$96</td></tr><tr><td style="font-weight:400;color:var(--text)">📿 Beads Out</td>
+      <td>363.7K</td><td>38.7K</td>
+      <td>2.0%</td>
+      <td>$1.11</td>
+      <td>$56.33</td>
+      <td>$47</td>
+      <td>$72</td>
+      <td>$104</td></tr><tr><td style="font-weight:400;color:var(--text)">🏀 Bounce Blast</td>
+      <td>98.2K</td><td>18.6K</td>
+      <td>3.5%</td>
+      <td>$1.84</td>
+      <td>$52.46</td>
+      <td>$42</td>
+      <td>$67</td>
+      <td>$101</td></tr><tr><td style="font-weight:400;color:var(--text)">🍕 Snacky Dash</td>
+      <td>26.8K</td><td>3.3K</td>
+      <td>2.3%</td>
+      <td>$0.61</td>
+      <td>$27.19</td>
+      <td>$22</td>
+      <td>$35</td>
+      <td>$53</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- REF TABLE — Spend Distribution by Bucket (below segment results) -->
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px">
           <div class="card-title" style="margin-bottom:0">📊 Spend Distribution — Payers Only</div>
@@ -397,108 +936,108 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
             </tr></thead>
             <tbody id="refBody"><tr class="sh0"><td class="sm"><div class="sm-fill" style="background:#3b82f6"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#1 $0–1</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">0</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh0"><td class="sm"><div class="sm-fill" style="background:#3b82f6"></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">1</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.0018774759213713084%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.16178246470807608%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.8923742563547863%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh0"><td class="sm"><div class="sm-fill" style="background:#3b82f6"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#2 $1–2</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">218</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:20.46948356807512%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">7%</div></div></td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:33.52009743455174%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">12%</div></div></td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:100%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">37%</div></div></td></tr><tr class="sh0"><td class="sm"><div class="sm-fill" style="background:#3b82f6"></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">2,062</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:3.8713553498676383%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">2%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:36.44200775731811%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">10%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:100%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">34%</div></div></td></tr><tr class="sh0"><td class="sm"><div class="sm-fill" style="background:#3b82f6"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#3 $2–3</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">132</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:12.394366197183096%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">4%</div></div></td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:9.571930078060586%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">3%</div></div></td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:19.005361434645963%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">7%</div></div></td></tr><tr class="sh0"><td class="sm"><div class="sm-fill" style="background:#3b82f6"></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">2,230</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:4.186771304658018%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">2%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:10.049907012308301%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">3%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:18.35446099187871%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">6%</div></div></td></tr><tr class="sh0"><td class="sm"><div class="sm-fill" style="background:#3b82f6"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#4 $3–4</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">126</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:11.830985915492958%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">4%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">2,083</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:3.9107823442164356%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">2%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh0"><td class="sm"><div class="sm-fill" style="background:#3b82f6"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#5 $4–5</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">457</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:42.91079812206572%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">14%</div></div></td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:36.33124386323468%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">13%</div></div></td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:43.22425586984655%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">16%</div></div></td></tr><tr class="sh0"><td class="sm"><div class="sm-fill" style="background:#3b82f6"></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">9,594</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:18.012503989636333%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">7%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:35.53662003629187%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">9%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:38.88896217247733%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">13%</div></div></td></tr><tr class="sh0"><td class="sm"><div class="sm-fill" style="background:#3b82f6"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#6 $5–6</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">174</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:16.33802816901408%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">5%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">3,640</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:6.834012353791563%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">3%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh0"><td class="sm"><div class="sm-fill" style="background:#3b82f6"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#7 $6–7</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">329</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:30.892018779342724%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">10%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">5,640</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:10.58896419653418%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">4%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh0"><td class="sm"><div class="sm-fill" style="background:#3b82f6"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#8 $7–8</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">1,065</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:100%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">33%</div></div></td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:100%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">36%</div></div></td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:74.30208911074135%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">27%</div></div></td></tr><tr class="sh1"><td class="sm"><div class="sm-fill" style="background:#10b981"></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">53,263</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:100%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">40%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:100%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">27%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:68.34456770744019%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">24%</div></div></td></tr><tr class="sh1"><td class="sm"><div class="sm-fill" style="background:#10b981"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#9 $8–9</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">217</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:20.375586854460092%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">7%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">13,224</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:24.827741584214184%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">10%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh1"><td class="sm"><div class="sm-fill" style="background:#10b981"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#10 $9–10</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">224</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:21.03286384976526%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">7%</div></div></td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:28.807905876370874%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">10%</div></div></td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:17.119615455721945%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">6%</div></div></td></tr><tr class="sh1"><td class="sm"><div class="sm-fill" style="background:#10b981"></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">25,757</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:48.35814730676079%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">19%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:61.16545721692606%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">16%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:33.434244834606275%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">12%</div></div></td></tr><tr class="sh1"><td class="sm"><div class="sm-fill" style="background:#10b981"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#11 $10–11</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">0</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">684</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:1.284193530217975%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">1%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh1"><td class="sm"><div class="sm-fill" style="background:#10b981"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#12 $11–12</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">128</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:12.018779342723006%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">4%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">2,786</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:5.230647916940465%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">2%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh1"><td class="sm"><div class="sm-fill" style="background:#10b981"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#13 $12–13</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">31</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:2.9107981220657275%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">1%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">2,116</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:3.972739049621689%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">2%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh1"><td class="sm"><div class="sm-fill" style="background:#10b981"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#14 $13–14</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">45</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:4.225352112676056%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">1%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">2,227</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:4.181138876893904%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">2%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh1"><td class="sm"><div class="sm-fill" style="background:#10b981"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#15 $14–15</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">55</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:5.164319248826291%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">2%</div></div></td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:38.55821269495175%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">14%</div></div></td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:15.270844888149382%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">6%</div></div></td></tr><tr class="sh1"><td class="sm"><div class="sm-fill" style="background:#10b981"></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">3,069</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:5.7619736026885455%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">2%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:34.278319626948424%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">9%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:12.487303618303896%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">4%</div></div></td></tr><tr class="sh1"><td class="sm"><div class="sm-fill" style="background:#10b981"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#16 $15–16</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">3</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.28169014084507044%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">149</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.279743912284325%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh2"><td class="sm"><div class="sm-fill" style="background:#f97316"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#17 $16–17</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">3</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.28169014084507044%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">722</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:1.3555376152300849%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">1%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh2"><td class="sm"><div class="sm-fill" style="background:#f97316"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#18 $17–18</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">2</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.18779342723004697%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">559</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:1.0495090400465614%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh2"><td class="sm"><div class="sm-fill" style="background:#f97316"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#19 $18–19</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">13</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:1.2206572769953052%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">500</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.9387379606856542%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh2"><td class="sm"><div class="sm-fill" style="background:#f97316"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#20 $19–20</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">2</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.18779342723004697%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.8715173638607601%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.25882787946015895%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh2"><td class="sm"><div class="sm-fill" style="background:#f97316"></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">980</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:1.8399264029438822%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">1%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:33.98686270379521%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">9%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:9.284297818640706%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">3%</div></div></td></tr><tr class="sh2"><td class="sm"><div class="sm-fill" style="background:#f97316"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#21 $20–21</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">2</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.18779342723004697%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">54</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.10138369975405065%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh2"><td class="sm"><div class="sm-fill" style="background:#f97316"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#22 $21–22</td>
@@ -507,18 +1046,18 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh2"><td class="sm"><div class="sm-fill" style="background:#f97316"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#23 $22–23</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">11</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:1.0328638497652582%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">317</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.5951598670747048%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh2"><td class="sm"><div class="sm-fill" style="background:#f97316"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#24 $23–24</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">1</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.09389671361502348%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">37</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.06946660909073842%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh2"><td class="sm"><div class="sm-fill" style="background:#f97316"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#25 $24–25</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">4</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.37558685446009393%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">211</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.3961474194093461%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr class="sh2"><td class="sm"><div class="sm-fill" style="background:#f97316"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#26 $25–26</td>
@@ -527,48 +1066,48 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr><td class="sm"><div class="sm-fill" style="background:transparent"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#27 $26–27</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">2</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.18779342723004697%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">58</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.1088936034395359%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr><td class="sm"><div class="sm-fill" style="background:transparent"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#28 $27–28</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">0</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">36</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.06758913316936711%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr><td class="sm"><div class="sm-fill" style="background:transparent"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#29 $28–29</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">0</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">10</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.018774759213713084%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr><td class="sm"><div class="sm-fill" style="background:transparent"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#30 $29–30</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">2</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.18779342723004697%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:14.94278896144306%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">5%</div></div></td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:2.958032908116103%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">1%</div></div></td></tr><tr><td class="sm"><div class="sm-fill" style="background:transparent"></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">214</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.40177984717346%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:38.242199969862774%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">10%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:6.96333328936318%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">2%</div></div></td></tr><tr><td class="sm"><div class="sm-fill" style="background:transparent"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#31 $30–31</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">0</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">40</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.07509903685485234%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr><td class="sm"><div class="sm-fill" style="background:transparent"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#32 $31–32</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">1</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.09389671361502348%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">7</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.013142331449599158%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr><td class="sm"><div class="sm-fill" style="background:transparent"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#33 $32–33</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">2</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.18779342723004697%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">41</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.07697651277622365%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr><td class="sm"><div class="sm-fill" style="background:transparent"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#34 $33–34</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">0</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">27</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.050691849877025325%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr><td class="sm"><div class="sm-fill" style="background:transparent"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#35 $34–35</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">1</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.09389671361502348%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">17</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.03191709066331224%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr><td class="sm"><div class="sm-fill" style="background:transparent"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#36 $35–36</td>
@@ -577,13 +1116,13 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr><td class="sm"><div class="sm-fill" style="background:transparent"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#37 $36–37</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">2</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.18779342723004697%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">4</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.007509903685485234%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr><td class="sm"><div class="sm-fill" style="background:transparent"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#38 $37–38</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">0</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">37</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.06946660909073842%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr><td class="sm"><div class="sm-fill" style="background:transparent"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#39 $38–39</td>
@@ -592,8 +1131,8 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr><td class="sm"><div class="sm-fill" style="background:transparent"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#40 $39–40</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">0</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">13</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.02440718697782701%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr><td class="sm"><div class="sm-fill" style="background:transparent"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#41 $40–41</td>
@@ -617,434 +1156,47 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr><td class="sm"><div class="sm-fill" style="background:transparent"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#45 $44–45</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">0</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">8</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.015019807370970467%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr><td class="sm"><div class="sm-fill" style="background:transparent"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#46 $45–46</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">1</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.09389671361502348%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">13</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.02440718697782701%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr><td class="sm"><div class="sm-fill" style="background:transparent"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#47 $46–47</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">0</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">16</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.030039614741940935%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr><td class="sm"><div class="sm-fill" style="background:transparent"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#48 $47–48</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">1</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.09389671361502348%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">13</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.02440718697782701%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr><td class="sm"><div class="sm-fill" style="background:transparent"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#49 $48–49</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">0</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">3</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.0056324277641139255%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr><td class="sm"><div class="sm-fill" style="background:transparent"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#50 $49–50</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">0</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td style="text-align:right;font-size:12px;font-weight:600">5</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.009387379606856542%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">0%</div></div></td>
       <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr><tr><td class="sm"><div class="sm-fill" style="background:transparent"></div></td>
       <td style="font-weight:600;font-size:12px;white-space:nowrap;color:var(--text2)">#51 $50+</td>
-      <td style="text-align:right;font-size:12px;font-weight:600">7</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.6572769953051644%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:11.956597899650205%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">4%</div></div></td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.9613606951377335%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">0%</div></div></td></tr></tbody>
+      <td style="text-align:right;font-size:12px;font-weight:600">55</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:0.10326117567542195%;background:#3b82f6"></div></div><div class="bar-pct" style="color:#3b82f6">0%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:26.238789856554952%;background:#10b981"></div></div><div class="bar-pct" style="color:#10b981">7%</div></div></td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:2.0153719655098117%;background:#f97316"></div></div><div class="bar-pct" style="color:#f97316">1%</div></div></td></tr></tbody>
           </table>
         </div>
-        <div style="font-size:11px;color:var(--text3);margin-top:8px" id="refHint">Bucketed by each user's P75 purchase price · ~3.3K payers · 51 buckets (cap $50+) · Voodoo DataWhisper (30d)</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:8px" id="refHint">Bucketed by each user's P75 purchase price · ~132.5K payers · 51 buckets (cap $50+) · Voodoo DataWhisper (30d)</div>
       </div>
 
-      <!-- RESULTS TABS -->
-      <div>
-        <div class="rtab-row">
-          <div class="rtab active" onclick="switchTab('dist',this)">📋 Distribution</div>
-          <div class="rtab" onclick="switchTab('charts',this)">📈 Charts</div>
-          <div class="rtab" onclick="switchTab('users',this)">👤 User Sample</div>
-          <div class="rtab" onclick="switchTab('compare',this)">⚖️ Game Compare</div>
-        </div>
-
-        <!-- GENERATION PROGRESS BAR (hidden by default) -->
-        <div id="genProgress" style="margin-bottom: 12px; display: none;">
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-              <span id="genProgressLabel" style="font-size:12px;font-weight:700;color:var(--text)">⚙️ Simulating 3.3K / 3.3K payers…</span>
-              <span id="genProgressPct" style="font-size:12px;font-weight:700;color:#818cf8">100%</span>
-            </div>
-            <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden">
-              <div id="genProgressBar" style="height: 100%; width: 100%; background: linear-gradient(90deg, rgb(99, 102, 241), rgb(129, 140, 248)); border-radius: 3px; transition: width 0.1s;"></div>
-            </div>
-          </div>
-        </div>
-
-        <div id="tab-dist">
-          <div class="card">
-            <div class="card-title">🎯 Segment Results</div>
-            <div class="legend" style="margin-bottom:14px">
-              <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>% of IAP</div>
-              <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>% of PDAU</div>
-              <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>% of Transactions</div>
-            </div>
-            <div class="hbar-wrap" id="hbarWrap"><div class="hbar-seg"><div class="hbar-name" style="color:#3b82f6">Low <span style="font-weight:400;color:var(--text3);font-size:11px">$0–$8 · #1–#8</span></div>
-      <div class="hbar-metric"><div class="hbar-mlabel">% of IAP</div>
-  <div class="hbar-bg"><div class="hbar-fill" style="width:65.3493149535099%;background:#3b82f6"></div>
-    <div class="grid-line" style="left:25%"></div><div class="grid-line" style="left:50%"></div><div class="grid-line" style="left:75%"></div></div>
-  <div class="hbar-val" style="color:#3b82f6">65.3%</div></div><div class="hbar-metric"><div class="hbar-mlabel">% of PDAU</div>
-  <div class="hbar-bg"><div class="hbar-fill" style="width:76.69426556271083%;background:#ef4444"></div>
-    <div class="grid-line" style="left:25%"></div><div class="grid-line" style="left:50%"></div><div class="grid-line" style="left:75%"></div></div>
-  <div class="hbar-val" style="color:#ef4444">76.7%</div></div><div class="hbar-metric"><div class="hbar-mlabel">% of Transactions</div>
-  <div class="hbar-bg"><div class="hbar-fill" style="width:86.60980232873004%;background:#f59e0b"></div>
-    <div class="grid-line" style="left:25%"></div><div class="grid-line" style="left:50%"></div><div class="grid-line" style="left:75%"></div></div>
-  <div class="hbar-val" style="color:#f59e0b">86.6%</div></div></div><div class="hbar-seg"><div class="hbar-name" style="color:#10b981">Mid <span style="font-weight:400;color:var(--text3);font-size:11px">$8–$16 · #9–#16</span></div>
-      <div class="hbar-metric"><div class="hbar-mlabel">% of IAP</div>
-  <div class="hbar-bg"><div class="hbar-fill" style="width:24.53600174579245%;background:#3b82f6"></div>
-    <div class="grid-line" style="left:25%"></div><div class="grid-line" style="left:50%"></div><div class="grid-line" style="left:75%"></div></div>
-  <div class="hbar-val" style="color:#3b82f6">24.5%</div></div><div class="hbar-metric"><div class="hbar-mlabel">% of PDAU</div>
-  <div class="hbar-bg"><div class="hbar-fill" style="width:21.55780435449249%;background:#ef4444"></div>
-    <div class="grid-line" style="left:25%"></div><div class="grid-line" style="left:50%"></div><div class="grid-line" style="left:75%"></div></div>
-  <div class="hbar-val" style="color:#ef4444">21.6%</div></div><div class="hbar-metric"><div class="hbar-mlabel">% of Transactions</div>
-  <div class="hbar-bg"><div class="hbar-fill" style="width:11.860276198212835%;background:#f59e0b"></div>
-    <div class="grid-line" style="left:25%"></div><div class="grid-line" style="left:50%"></div><div class="grid-line" style="left:75%"></div></div>
-  <div class="hbar-val" style="color:#f59e0b">11.9%</div></div></div><div class="hbar-seg"><div class="hbar-name" style="color:#f97316">High <span style="font-weight:400;color:var(--text3);font-size:11px">$16–$26 · #17–#26</span></div>
-      <div class="hbar-metric"><div class="hbar-mlabel">% of IAP</div>
-  <div class="hbar-bg"><div class="hbar-fill" style="width:0.31742294219513145%;background:#3b82f6"></div>
-    <div class="grid-line" style="left:25%"></div><div class="grid-line" style="left:50%"></div><div class="grid-line" style="left:75%"></div></div>
-  <div class="hbar-val" style="color:#3b82f6">0.3%</div></div><div class="hbar-metric"><div class="hbar-mlabel">% of PDAU</div>
-  <div class="hbar-bg"><div class="hbar-fill" style="width:1.1652867218644587%;background:#ef4444"></div>
-    <div class="grid-line" style="left:25%"></div><div class="grid-line" style="left:50%"></div><div class="grid-line" style="left:75%"></div></div>
-  <div class="hbar-val" style="color:#ef4444">1.2%</div></div><div class="hbar-metric"><div class="hbar-mlabel">% of Transactions</div>
-  <div class="hbar-bg"><div class="hbar-fill" style="width:0.09477389656106146%;background:#f59e0b"></div>
-    <div class="grid-line" style="left:25%"></div><div class="grid-line" style="left:50%"></div><div class="grid-line" style="left:75%"></div></div>
-  <div class="hbar-val" style="color:#f59e0b">0.1%</div></div></div></div>
-            <table class="rtable" style="margin-top:18px">
-              <thead><tr>
-                <th>Segment</th><th>Range</th><th>Payers</th>
-                <th style="color:#3b82f6">% IAP</th>
-                <th style="color:#ef4444">% PDAU</th>
-                <th style="color:#f59e0b">% Txns</th>
-                <th>Avg $</th><th>Avg Txns</th>
-              </tr></thead>
-              <tbody id="resultBody"><tr><td><div class="bname"><div style="width:8px;height:8px;border-radius:50%;background:#3b82f6"></div>Low</div></td>
-      <td style="font-size:11px;color:var(--text2)">$0–$8</td>
-      <td style="font-weight:600">2,501</td>
-      <td style="font-weight:700;color:#3b82f6">65.3%</td>
-      <td style="font-weight:700;color:#ef4444">76.7%</td>
-      <td style="font-weight:700;color:#f59e0b">86.6%</td>
-      <td style="color:var(--text2)">$23.76</td>
-      <td style="color:var(--text2)">4.6</td></tr><tr><td><div class="bname"><div style="width:8px;height:8px;border-radius:50%;background:#10b981"></div>Mid</div></td>
-      <td style="font-size:11px;color:var(--text2)">$8–$16</td>
-      <td style="font-weight:600">703</td>
-      <td style="font-weight:700;color:#3b82f6">24.5%</td>
-      <td style="font-weight:700;color:#ef4444">21.6%</td>
-      <td style="font-weight:700;color:#f59e0b">11.9%</td>
-      <td style="color:var(--text2)">$35.91</td>
-      <td style="color:var(--text2)">4.4</td></tr><tr><td><div class="bname"><div style="width:8px;height:8px;border-radius:50%;background:#f97316"></div>High</div></td>
-      <td style="font-size:11px;color:var(--text2)">$16–$26</td>
-      <td style="font-weight:600">38</td>
-      <td style="font-weight:700;color:#3b82f6">0.3%</td>
-      <td style="font-weight:700;color:#ef4444">1.2%</td>
-      <td style="font-weight:700;color:#f59e0b">0.1%</td>
-      <td style="color:var(--text2)">$45.65</td>
-      <td style="color:var(--text2)">3.1</td></tr><tr style="opacity: 0.4;"><td><div class="bname"><div style="width:8px;height:8px;border-radius:50%;background:var(--text3)"></div>Unassigned</div></td>
-      <td style="color:var(--text3)">—</td><td style="font-weight:600">19</td>
-      <td style="color:var(--text3)">2.0%</td>
-      <td style="color:var(--text3)">0.6%</td>
-      <td style="color:var(--text3)">0.4%</td>
-      <td style="color:var(--text3)">—</td><td style="color:var(--text3)">—</td></tr></tbody>
-            </table>
-          </div>
-        </div>
-
-        <div id="tab-charts" style="display:none">
-          <div class="donuts-grid">
-            <div class="card"><div class="card-title">👥 DAU % by Segment</div><div class="cw"><canvas id="dauChart" style="box-sizing: border-box; display: block; height: 0px; width: 0px;" width="0" height="0"></canvas></div></div>
-            <div class="card"><div class="card-title">💰 Revenue % by Segment</div><div class="cw"><canvas id="revChart" style="box-sizing: border-box; display: block; height: 0px; width: 0px;" width="0" height="0"></canvas></div></div>
-            <div class="card"><div class="card-title">🛒 Transactions %</div><div class="cw"><canvas id="txnChart" style="box-sizing: border-box; display: block; height: 0px; width: 0px;" width="0" height="0"></canvas></div></div>
-          </div>
-          <div class="card" style="margin-top:14px">
-            <div class="card-title">📊 All Metrics Compared</div>
-            <div style="height:300px;position:relative"><canvas id="barChart" style="box-sizing: border-box; display: block; height: 0px; width: 0px;" width="0" height="0"></canvas></div>
-          </div>
-        </div>
-
-        <div id="tab-users" style="display:none">
-          <div class="card">
-            <div class="card-title">🔍 User Sample — Top 8 per Segment</div>
-            <div style="overflow-x:auto">
-              <table class="utab">
-                <thead><tr>
-                  <th>User ID</th><th>Segment</th><th>Total Spend</th><th>Purchases</th><th>Avg Price</th><th>Days Active</th>
-                </tr></thead>
-                <tbody id="userBody"><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U1F29C3</td>
-        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#3b82f6"></div>Low</div></td>
-        <td style="font-weight:600">$71.91</td>
-        <td>9</td>
-        <td>$7.99</td>
-        <td>3d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U55734A</td>
-        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#3b82f6"></div>Low</div></td>
-        <td style="font-weight:600">$10.98</td>
-        <td>2</td>
-        <td>$5.49</td>
-        <td>5d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U66BA58</td>
-        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#3b82f6"></div>Low</div></td>
-        <td style="font-weight:600">$31.94</td>
-        <td>6</td>
-        <td>$5.32</td>
-        <td>21d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U4A9FB8</td>
-        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#3b82f6"></div>Low</div></td>
-        <td style="font-weight:600">$24.93</td>
-        <td>7</td>
-        <td>$3.56</td>
-        <td>5d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">UFB9DD</td>
-        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#3b82f6"></div>Low</div></td>
-        <td style="font-weight:600">$20.94</td>
-        <td>6</td>
-        <td>$3.49</td>
-        <td>8d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U9582D2</td>
-        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#3b82f6"></div>Low</div></td>
-        <td style="font-weight:600">$30.93</td>
-        <td>7</td>
-        <td>$4.42</td>
-        <td>10d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U118B34</td>
-        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#3b82f6"></div>Low</div></td>
-        <td style="font-weight:600">$8.97</td>
-        <td>3</td>
-        <td>$2.99</td>
-        <td>9d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U7E942C</td>
-        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#3b82f6"></div>Low</div></td>
-        <td style="font-weight:600">$24.95</td>
-        <td>5</td>
-        <td>$4.99</td>
-        <td>10d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U701D42</td>
-        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>Mid</div></td>
-        <td style="font-weight:600">$22.97</td>
-        <td>3</td>
-        <td>$7.66</td>
-        <td>10d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U8FD79E</td>
-        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>Mid</div></td>
-        <td style="font-weight:600">$9.99</td>
-        <td>1</td>
-        <td>$9.99</td>
-        <td>12d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U969A65</td>
-        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>Mid</div></td>
-        <td style="font-weight:600">$48.92</td>
-        <td>8</td>
-        <td>$6.12</td>
-        <td>12d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U66020D</td>
-        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>Mid</div></td>
-        <td style="font-weight:600">$37.95</td>
-        <td>5</td>
-        <td>$7.59</td>
-        <td>24d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U25C5A1</td>
-        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>Mid</div></td>
-        <td style="font-weight:600">$71.92</td>
-        <td>8</td>
-        <td>$8.99</td>
-        <td>1d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U836F5E</td>
-        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>Mid</div></td>
-        <td style="font-weight:600">$36.96</td>
-        <td>4</td>
-        <td>$9.24</td>
-        <td>4d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U8908E2</td>
-        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>Mid</div></td>
-        <td style="font-weight:600">$19.97</td>
-        <td>3</td>
-        <td>$6.66</td>
-        <td>15d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U96BD0E</td>
-        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>Mid</div></td>
-        <td style="font-weight:600">$26.96</td>
-        <td>4</td>
-        <td>$6.74</td>
-        <td>19d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U789B66</td>
-        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#f97316"></div>High</div></td>
-        <td style="font-weight:600">$41.97</td>
-        <td>3</td>
-        <td>$13.99</td>
-        <td>13d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U91233F</td>
-        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#f97316"></div>High</div></td>
-        <td style="font-weight:600">$71.96</td>
-        <td>4</td>
-        <td>$17.99</td>
-        <td>18d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U20869B</td>
-        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#f97316"></div>High</div></td>
-        <td style="font-weight:600">$39.97</td>
-        <td>3</td>
-        <td>$13.32</td>
-        <td>2d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U1D6BF3</td>
-        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#f97316"></div>High</div></td>
-        <td style="font-weight:600">$39.97</td>
-        <td>3</td>
-        <td>$13.32</td>
-        <td>13d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U1FF4DE</td>
-        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#f97316"></div>High</div></td>
-        <td style="font-weight:600">$31.98</td>
-        <td>2</td>
-        <td>$15.99</td>
-        <td>14d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U5E9845</td>
-        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#f97316"></div>High</div></td>
-        <td style="font-weight:600">$63.94</td>
-        <td>6</td>
-        <td>$10.66</td>
-        <td>13d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U2E844D</td>
-        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#f97316"></div>High</div></td>
-        <td style="font-weight:600">$37.98</td>
-        <td>2</td>
-        <td>$18.99</td>
-        <td>10d</td></tr><tr><td style="font-family:monospace;font-size:11px;color:var(--text3)">U210C74</td>
-        <td><div class="bname"><div style="width:7px;height:7px;border-radius:50%;background:#f97316"></div>High</div></td>
-        <td style="font-weight:600">$54.97</td>
-        <td>3</td>
-        <td>$18.32</td>
-        <td>6d</td></tr></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <div id="tab-compare" style="display:none">
-          <div class="card">
-            <div class="card-title">⚖️ Cross-Game ARPPU &amp; Conversion</div>
-            <div style="height:300px;position:relative"><canvas id="compareChart" style="box-sizing: border-box; display: block; height: 0px; width: 0px;" width="0" height="0"></canvas></div>
-          </div>
-          <div class="card" style="margin-top:14px">
-            <div class="card-title">📊 KPI Summary — All Games</div>
-            <table class="rtable">
-              <thead><tr>
-                <th>Game</th><th>DAU</th><th>Payers</th><th>Conv%</th><th>ARPU</th><th>ARPPU</th><th>P50</th><th>P75</th><th>P90</th>
-              </tr></thead>
-              <tbody id="compareBody"><tr><td style="font-weight:400;color:var(--text)">🔵 Marble Sort</td>
-      <td>1.7M</td><td>132.5K</td>
-      <td>1.5%</td>
-      <td>$1.03</td>
-      <td>$70.12</td>
-      <td>$55</td>
-      <td>$90</td>
-      <td>$135</td></tr><tr><td style="font-weight:400;color:var(--text)">⏳ Sand Loop</td>
-      <td>373.5K</td><td>76.8K</td>
-      <td>3.8%</td>
-      <td>$1.75</td>
-      <td>$46.03</td>
-      <td>$37</td>
-      <td>$59</td>
-      <td>$90</td></tr><tr><td style="font-weight:400;color:var(--text)">🔄 Loop Sort</td>
-      <td>273.1K</td><td>46.6K</td>
-      <td>3.2%</td>
-      <td>$1.55</td>
-      <td>$48.89</td>
-      <td>$40</td>
-      <td>$64</td>
-      <td>$96</td></tr><tr><td style="font-weight:400;color:var(--text)">📿 Beads Out</td>
-      <td>363.7K</td><td>38.7K</td>
-      <td>2.0%</td>
-      <td>$1.11</td>
-      <td>$56.33</td>
-      <td>$47</td>
-      <td>$72</td>
-      <td>$104</td></tr><tr><td style="font-weight:400;color:var(--text)">🏀 Bounce Blast</td>
-      <td>98.2K</td><td>18.6K</td>
-      <td>3.5%</td>
-      <td>$1.84</td>
-      <td>$52.46</td>
-      <td>$42</td>
-      <td>$67</td>
-      <td>$101</td></tr><tr><td style="font-weight:700;color:#f97316">🍕 Snacky Dash</td>
-      <td>26.8K</td><td>3.3K</td>
-      <td>2.3%</td>
-      <td>$0.61</td>
-      <td>$27.19</td>
-      <td>$22</td>
-      <td>$35</td>
-      <td>$53</td></tr></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
     </div>
 
-    <!-- RIGHT COLUMN -->
-    <div style="display:flex;flex-direction:column;gap:14px;position:sticky;top:62px">
-
-      <div class="card">
-        <div class="card-title">🪣 Segment Thresholds</div>
-        <div style="font-size:11px;color:var(--text3);margin-bottom:12px;line-height:1.6">
-          Pick <b style="color:var(--text2)">start</b> and <b style="color:var(--text2)">end bucket</b> for each segment. Table rows highlight instantly.
-        </div>
-        <div id="segRows"><div class="seg-row"><div class="seg-dot" style="background:#3b82f6"></div>
-      <div><div class="seg-lbl">Start</div><select class="seg-sel" onchange="updateSeg(1,'startBucket',this.value)"><option value="1" selected="">#1 $0–1</option><option value="2">#2 $1–2</option><option value="3">#3 $2–3</option><option value="4">#4 $3–4</option><option value="5">#5 $4–5</option><option value="6">#6 $5–6</option><option value="7">#7 $6–7</option><option value="8">#8 $7–8</option><option value="9">#9 $8–9</option><option value="10">#10 $9–10</option><option value="11">#11 $10–11</option><option value="12">#12 $11–12</option><option value="13">#13 $12–13</option><option value="14">#14 $13–14</option><option value="15">#15 $14–15</option><option value="16">#16 $15–16</option><option value="17">#17 $16–17</option><option value="18">#18 $17–18</option><option value="19">#19 $18–19</option><option value="20">#20 $19–20</option><option value="21">#21 $20–21</option><option value="22">#22 $21–22</option><option value="23">#23 $22–23</option><option value="24">#24 $23–24</option><option value="25">#25 $24–25</option><option value="26">#26 $25–26</option><option value="27">#27 $26–27</option><option value="28">#28 $27–28</option><option value="29">#29 $28–29</option><option value="30">#30 $29–30</option><option value="31">#31 $30–31</option><option value="32">#32 $31–32</option><option value="33">#33 $32–33</option><option value="34">#34 $33–34</option><option value="35">#35 $34–35</option><option value="36">#36 $35–36</option><option value="37">#37 $36–37</option><option value="38">#38 $37–38</option><option value="39">#39 $38–39</option><option value="40">#40 $39–40</option><option value="41">#41 $40–41</option><option value="42">#42 $41–42</option><option value="43">#43 $42–43</option><option value="44">#44 $43–44</option><option value="45">#45 $44–45</option><option value="46">#46 $45–46</option><option value="47">#47 $46–47</option><option value="48">#48 $47–48</option><option value="49">#49 $48–49</option><option value="50">#50 $49–50</option><option value="51">#51 $50+</option></select></div>
-      <div style="color:var(--text3);font-size:12px;margin-top:14px">→</div>
-      <div><div class="seg-lbl">End</div><select class="seg-sel" onchange="updateSeg(1,'endBucket',this.value)"><option value="1">#1 $0–1</option><option value="2">#2 $1–2</option><option value="3">#3 $2–3</option><option value="4">#4 $3–4</option><option value="5">#5 $4–5</option><option value="6">#6 $5–6</option><option value="7">#7 $6–7</option><option value="8" selected="">#8 $7–8</option><option value="9">#9 $8–9</option><option value="10">#10 $9–10</option><option value="11">#11 $10–11</option><option value="12">#12 $11–12</option><option value="13">#13 $12–13</option><option value="14">#14 $13–14</option><option value="15">#15 $14–15</option><option value="16">#16 $15–16</option><option value="17">#17 $16–17</option><option value="18">#18 $17–18</option><option value="19">#19 $18–19</option><option value="20">#20 $19–20</option><option value="21">#21 $20–21</option><option value="22">#22 $21–22</option><option value="23">#23 $22–23</option><option value="24">#24 $23–24</option><option value="25">#25 $24–25</option><option value="26">#26 $25–26</option><option value="27">#27 $26–27</option><option value="28">#28 $27–28</option><option value="29">#29 $28–29</option><option value="30">#30 $29–30</option><option value="31">#31 $30–31</option><option value="32">#32 $31–32</option><option value="33">#33 $32–33</option><option value="34">#34 $33–34</option><option value="35">#35 $34–35</option><option value="36">#36 $35–36</option><option value="37">#37 $36–37</option><option value="38">#38 $37–38</option><option value="39">#39 $38–39</option><option value="40">#40 $39–40</option><option value="41">#41 $40–41</option><option value="42">#42 $41–42</option><option value="43">#43 $42–43</option><option value="44">#44 $43–44</option><option value="45">#45 $44–45</option><option value="46">#46 $45–46</option><option value="47">#47 $46–47</option><option value="48">#48 $47–48</option><option value="49">#49 $48–49</option><option value="50">#50 $49–50</option><option value="51">#51 $50+</option></select></div>
-      <div style="flex:1;font-size:11px;color:#3b82f6;font-weight:700;text-align:center;margin-top:14px">$0–$8</div>
-      <div class="seg-del" onclick="removeSeg(1)">×</div></div><div class="seg-row"><div class="seg-dot" style="background:#10b981"></div>
-      <div><div class="seg-lbl">Start</div><select class="seg-sel" onchange="updateSeg(2,'startBucket',this.value)"><option value="1">#1 $0–1</option><option value="2">#2 $1–2</option><option value="3">#3 $2–3</option><option value="4">#4 $3–4</option><option value="5">#5 $4–5</option><option value="6">#6 $5–6</option><option value="7">#7 $6–7</option><option value="8">#8 $7–8</option><option value="9" selected="">#9 $8–9</option><option value="10">#10 $9–10</option><option value="11">#11 $10–11</option><option value="12">#12 $11–12</option><option value="13">#13 $12–13</option><option value="14">#14 $13–14</option><option value="15">#15 $14–15</option><option value="16">#16 $15–16</option><option value="17">#17 $16–17</option><option value="18">#18 $17–18</option><option value="19">#19 $18–19</option><option value="20">#20 $19–20</option><option value="21">#21 $20–21</option><option value="22">#22 $21–22</option><option value="23">#23 $22–23</option><option value="24">#24 $23–24</option><option value="25">#25 $24–25</option><option value="26">#26 $25–26</option><option value="27">#27 $26–27</option><option value="28">#28 $27–28</option><option value="29">#29 $28–29</option><option value="30">#30 $29–30</option><option value="31">#31 $30–31</option><option value="32">#32 $31–32</option><option value="33">#33 $32–33</option><option value="34">#34 $33–34</option><option value="35">#35 $34–35</option><option value="36">#36 $35–36</option><option value="37">#37 $36–37</option><option value="38">#38 $37–38</option><option value="39">#39 $38–39</option><option value="40">#40 $39–40</option><option value="41">#41 $40–41</option><option value="42">#42 $41–42</option><option value="43">#43 $42–43</option><option value="44">#44 $43–44</option><option value="45">#45 $44–45</option><option value="46">#46 $45–46</option><option value="47">#47 $46–47</option><option value="48">#48 $47–48</option><option value="49">#49 $48–49</option><option value="50">#50 $49–50</option><option value="51">#51 $50+</option></select></div>
-      <div style="color:var(--text3);font-size:12px;margin-top:14px">→</div>
-      <div><div class="seg-lbl">End</div><select class="seg-sel" onchange="updateSeg(2,'endBucket',this.value)"><option value="1">#1 $0–1</option><option value="2">#2 $1–2</option><option value="3">#3 $2–3</option><option value="4">#4 $3–4</option><option value="5">#5 $4–5</option><option value="6">#6 $5–6</option><option value="7">#7 $6–7</option><option value="8">#8 $7–8</option><option value="9">#9 $8–9</option><option value="10">#10 $9–10</option><option value="11">#11 $10–11</option><option value="12">#12 $11–12</option><option value="13">#13 $12–13</option><option value="14">#14 $13–14</option><option value="15">#15 $14–15</option><option value="16" selected="">#16 $15–16</option><option value="17">#17 $16–17</option><option value="18">#18 $17–18</option><option value="19">#19 $18–19</option><option value="20">#20 $19–20</option><option value="21">#21 $20–21</option><option value="22">#22 $21–22</option><option value="23">#23 $22–23</option><option value="24">#24 $23–24</option><option value="25">#25 $24–25</option><option value="26">#26 $25–26</option><option value="27">#27 $26–27</option><option value="28">#28 $27–28</option><option value="29">#29 $28–29</option><option value="30">#30 $29–30</option><option value="31">#31 $30–31</option><option value="32">#32 $31–32</option><option value="33">#33 $32–33</option><option value="34">#34 $33–34</option><option value="35">#35 $34–35</option><option value="36">#36 $35–36</option><option value="37">#37 $36–37</option><option value="38">#38 $37–38</option><option value="39">#39 $38–39</option><option value="40">#40 $39–40</option><option value="41">#41 $40–41</option><option value="42">#42 $41–42</option><option value="43">#43 $42–43</option><option value="44">#44 $43–44</option><option value="45">#45 $44–45</option><option value="46">#46 $45–46</option><option value="47">#47 $46–47</option><option value="48">#48 $47–48</option><option value="49">#49 $48–49</option><option value="50">#50 $49–50</option><option value="51">#51 $50+</option></select></div>
-      <div style="flex:1;font-size:11px;color:#10b981;font-weight:700;text-align:center;margin-top:14px">$8–$16</div>
-      <div class="seg-del" onclick="removeSeg(2)">×</div></div><div class="seg-row"><div class="seg-dot" style="background:#f97316"></div>
-      <div><div class="seg-lbl">Start</div><select class="seg-sel" onchange="updateSeg(3,'startBucket',this.value)"><option value="1">#1 $0–1</option><option value="2">#2 $1–2</option><option value="3">#3 $2–3</option><option value="4">#4 $3–4</option><option value="5">#5 $4–5</option><option value="6">#6 $5–6</option><option value="7">#7 $6–7</option><option value="8">#8 $7–8</option><option value="9">#9 $8–9</option><option value="10">#10 $9–10</option><option value="11">#11 $10–11</option><option value="12">#12 $11–12</option><option value="13">#13 $12–13</option><option value="14">#14 $13–14</option><option value="15">#15 $14–15</option><option value="16">#16 $15–16</option><option value="17" selected="">#17 $16–17</option><option value="18">#18 $17–18</option><option value="19">#19 $18–19</option><option value="20">#20 $19–20</option><option value="21">#21 $20–21</option><option value="22">#22 $21–22</option><option value="23">#23 $22–23</option><option value="24">#24 $23–24</option><option value="25">#25 $24–25</option><option value="26">#26 $25–26</option><option value="27">#27 $26–27</option><option value="28">#28 $27–28</option><option value="29">#29 $28–29</option><option value="30">#30 $29–30</option><option value="31">#31 $30–31</option><option value="32">#32 $31–32</option><option value="33">#33 $32–33</option><option value="34">#34 $33–34</option><option value="35">#35 $34–35</option><option value="36">#36 $35–36</option><option value="37">#37 $36–37</option><option value="38">#38 $37–38</option><option value="39">#39 $38–39</option><option value="40">#40 $39–40</option><option value="41">#41 $40–41</option><option value="42">#42 $41–42</option><option value="43">#43 $42–43</option><option value="44">#44 $43–44</option><option value="45">#45 $44–45</option><option value="46">#46 $45–46</option><option value="47">#47 $46–47</option><option value="48">#48 $47–48</option><option value="49">#49 $48–49</option><option value="50">#50 $49–50</option><option value="51">#51 $50+</option></select></div>
-      <div style="color:var(--text3);font-size:12px;margin-top:14px">→</div>
-      <div><div class="seg-lbl">End</div><select class="seg-sel" onchange="updateSeg(3,'endBucket',this.value)"><option value="1">#1 $0–1</option><option value="2">#2 $1–2</option><option value="3">#3 $2–3</option><option value="4">#4 $3–4</option><option value="5">#5 $4–5</option><option value="6">#6 $5–6</option><option value="7">#7 $6–7</option><option value="8">#8 $7–8</option><option value="9">#9 $8–9</option><option value="10">#10 $9–10</option><option value="11">#11 $10–11</option><option value="12">#12 $11–12</option><option value="13">#13 $12–13</option><option value="14">#14 $13–14</option><option value="15">#15 $14–15</option><option value="16">#16 $15–16</option><option value="17">#17 $16–17</option><option value="18">#18 $17–18</option><option value="19">#19 $18–19</option><option value="20">#20 $19–20</option><option value="21">#21 $20–21</option><option value="22">#22 $21–22</option><option value="23">#23 $22–23</option><option value="24">#24 $23–24</option><option value="25">#25 $24–25</option><option value="26" selected="">#26 $25–26</option><option value="27">#27 $26–27</option><option value="28">#28 $27–28</option><option value="29">#29 $28–29</option><option value="30">#30 $29–30</option><option value="31">#31 $30–31</option><option value="32">#32 $31–32</option><option value="33">#33 $32–33</option><option value="34">#34 $33–34</option><option value="35">#35 $34–35</option><option value="36">#36 $35–36</option><option value="37">#37 $36–37</option><option value="38">#38 $37–38</option><option value="39">#39 $38–39</option><option value="40">#40 $39–40</option><option value="41">#41 $40–41</option><option value="42">#42 $41–42</option><option value="43">#43 $42–43</option><option value="44">#44 $43–44</option><option value="45">#45 $44–45</option><option value="46">#46 $45–46</option><option value="47">#47 $46–47</option><option value="48">#48 $47–48</option><option value="49">#49 $48–49</option><option value="50">#50 $49–50</option><option value="51">#51 $50+</option></select></div>
-      <div style="flex:1;font-size:11px;color:#f97316;font-weight:700;text-align:center;margin-top:14px">$16–$26</div>
-      <div class="seg-del" onclick="removeSeg(3)">×</div></div></div>
-        <button class="btn btn-add" onclick="addSegment()">+ Add Segment</button>
-        <div style="margin-top:10px">
-          <button class="btn btn-ghost" style="width:100%;font-size:12px;justify-content:center" onclick="resetSegments()">↺ Reset to Defaults</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">📐 Spend Percentiles</div>
-        <div class="perc-grid" id="percCards">
-    <div class="perc-card" style="grid-column:1/-1;background:rgba(99,102,241,.08);border-color:rgba(99,102,241,.2)">
-      <div class="perc-label" style="color:#818cf8">Classification metric</div>
-      <div style="font-size:14px;font-weight:700;margin-top:2px">P75 of each user's purchases</div>
-      <div style="font-size:10px;color:var(--text3);margin-top:2px">Users bucketed by their personal P75 transaction price</div>
-    </div>
-    <div class="perc-card"><div class="perc-label">P50 of pop.</div><div class="perc-val">$8</div></div>
-    <div class="perc-card"><div class="perc-label">P75 of pop.</div><div class="perc-val">$8</div></div>
-    <div class="perc-card"><div class="perc-label">P90 of pop.</div><div class="perc-val">$10</div></div>
-    <div class="perc-card"><div class="perc-label">P95 of pop.</div><div class="perc-val">$12</div></div></div>
-        <div class="cw-sm"><canvas id="percChart" style="box-sizing: border-box; display: block; height: 150px; width: 362px;" width="724" height="300"></canvas></div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">⚖️ All Games — Quick KPIs</div>
-        <table style="width:100%;border-collapse:collapse;font-size:11.5px">
-          <thead><tr>
-            <th style="text-align:left;padding:4px 6px;color:var(--text3);border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase">Game</th>
-            <th style="padding:4px 6px;color:var(--text3);border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase;text-align:center">Conv%</th>
-            <th style="padding:4px 6px;color:var(--text3);border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase;text-align:center">ARPPU</th>
-            <th style="padding:4px 6px;color:var(--text3);border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase;text-align:center">P50</th>
-            <th style="padding:4px 6px;color:var(--text3);border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase;text-align:center">P90</th>
-          </tr></thead>
-          <tbody id="miniCompareBody"><tr style="cursor: pointer;"><td style="padding:4px 6px;font-weight:400;color:var(--text)">🔵 Marble Sort</td>
-      <td style="padding:4px 6px;text-align:center;color:var(--text2)">1.5%</td>
-      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$70.1</td>
-      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$55</td>
-      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$135</td></tr><tr style="cursor: pointer;"><td style="padding:4px 6px;font-weight:400;color:var(--text)">⏳ Sand Loop</td>
-      <td style="padding:4px 6px;text-align:center;color:var(--text2)">3.8%</td>
-      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$46.0</td>
-      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$37</td>
-      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$90</td></tr><tr style="cursor: pointer;"><td style="padding:4px 6px;font-weight:400;color:var(--text)">🔄 Loop Sort</td>
-      <td style="padding:4px 6px;text-align:center;color:var(--text2)">3.2%</td>
-      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$48.9</td>
-      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$40</td>
-      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$96</td></tr><tr style="cursor: pointer;"><td style="padding:4px 6px;font-weight:400;color:var(--text)">📿 Beads Out</td>
-      <td style="padding:4px 6px;text-align:center;color:var(--text2)">2.0%</td>
-      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$56.3</td>
-      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$47</td>
-      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$104</td></tr><tr style="cursor: pointer;"><td style="padding:4px 6px;font-weight:400;color:var(--text)">🏀 Bounce Blast</td>
-      <td style="padding:4px 6px;text-align:center;color:var(--text2)">3.5%</td>
-      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$52.5</td>
-      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$42</td>
-      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$101</td></tr><tr style="cursor: pointer;"><td style="padding:4px 6px;font-weight:700;color:#f97316">🍕 Snacky Dash</td>
-      <td style="padding:4px 6px;text-align:center;color:var(--text2)">2.3%</td>
-      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$27.2</td>
-      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$22</td>
-      <td style="padding:4px 6px;text-align:center;color:var(--text2)">$53</td></tr></tbody>
-        </table>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -1356,25 +1508,64 @@ function defaultSegments(bins){
 function resetSegments(){const b=computeBinLabels(S.binSize);S.segments=defaultSegments(b);renderSegRows(b);runAnalysis();}
 function addSegment(){const b=computeBinLabels(S.binSize);const n=b.length;S.segments.push({id:Date.now(),name:`Seg ${S.segments.length+1}`,color:SEG_COLORS[S.segments.length%SEG_COLORS.length],startBucket:1,endBucket:n});renderSegRows(b);runAnalysis();}
 function removeSeg(id){S.segments=S.segments.filter(s=>s.id!==id);const b=computeBinLabels(S.binSize);renderSegRows(b);runAnalysis();}
-function updateSeg(id,field,val){const seg=S.segments.find(s=>s.id===id);if(seg){seg[field]=parseInt(val);const b=computeBinLabels(S.binSize);renderSegRows(b);runAnalysis();}}
+function updateSeg(id,field,val){
+  const seg=S.segments.find(s=>s.id===id);if(!seg)return;
+  // Name is a string; bucket fields are integers
+  seg[field]=field==='name'?val:parseInt(val);
+  const b=computeBinLabels(S.binSize);
+  // For name changes, re-render rows but don't re-run analysis (no data change)
+  if(field==='name'){renderSegRows(b);renderResults&&renderResults();}
+  else{renderSegRows(b);runAnalysis();}
+}
 
 function renderSegRows(bins){
   const c=document.getElementById('segRows');c.innerHTML='';
+  const n=bins.length;
   for(const seg of S.segments){
-    const n=bins.length;
     const mkOpts=sel=>bins.map((b,i)=>`<option value="${i+1}"${sel===i+1?' selected':''}>#${i+1} ${b.label}</option>`).join('');
     const sb=bins[Math.min(seg.startBucket-1,n-1)];
     const eb=bins[Math.min(seg.endBucket-1,n-1)];
-    const rl=sb&&eb?`${sb.isPlus&&eb.isPlus?'$'+SPEND_CAP+'+':'$'+sb.lo+'–'+(eb.isPlus?'∞':'$'+eb.hi)}`:'';
+    const rl=sb&&eb?fmtSegRange(sb,eb):'';
     const row=document.createElement('div');row.className='seg-row';
-    row.innerHTML=`<div class="seg-dot" style="background:${seg.color}"></div>
-      <div><div class="seg-lbl">Start</div><select class="seg-sel" onchange="updateSeg(${seg.id},'startBucket',this.value)">${mkOpts(seg.startBucket)}</select></div>
-      <div style="color:var(--text3);font-size:12px;margin-top:14px">→</div>
-      <div><div class="seg-lbl">End</div><select class="seg-sel" onchange="updateSeg(${seg.id},'endBucket',this.value)">${mkOpts(seg.endBucket)}</select></div>
-      <div style="flex:1;font-size:11px;color:${seg.color};font-weight:700;text-align:center;margin-top:14px">${rl}</div>
-      <div class="seg-del" onclick="removeSeg(${seg.id})">×</div>`;
+    row.innerHTML=`
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px">
+        <div class="seg-dot" style="background:${seg.color};width:10px;height:10px"></div>
+        <input class="seg-name-input" value="${seg.name}"
+          onchange="updateSeg(${seg.id},'name',this.value)"
+          oninput="updateSeg(${seg.id},'name',this.value)"
+          style="flex:1;background:none;border:none;border-bottom:1px solid var(--border);
+                 color:${seg.color};font-weight:700;font-size:13px;padding:1px 2px;
+                 outline:none;cursor:text;min-width:0"
+          title="Click to rename">
+        <span style="font-size:12px;font-weight:700;color:${seg.color};white-space:nowrap">${rl}</span>
+        <div class="seg-del" onclick="removeSeg(${seg.id})">×</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;padding-left:17px">
+        <div><div class="seg-lbl">Start</div><select class="seg-sel" onchange="updateSeg(${seg.id},'startBucket',this.value)">${mkOpts(seg.startBucket)}</select></div>
+        <div style="color:var(--text3);font-size:12px;margin-top:10px">→</div>
+        <div><div class="seg-lbl">End</div><select class="seg-sel" onchange="updateSeg(${seg.id},'endBucket',this.value)">${mkOpts(seg.endBucket)}</select></div>
+      </div>`;
     c.appendChild(row);
   }
+
+  // ── Coverage validation — show inline gap warnings ──
+  const gaps=validateCoverage(bins);
+  const gapEl=document.createElement('div');
+  gapEl.id='seg-coverage-warning';
+  if(gaps.length){
+    const gapDescriptions=gaps.map(g=>`<b>#${g.fromBucket}–#${g.toBucket}</b> (${g.label})`).join(', ');
+    gapEl.innerHTML=`
+      <div style="margin-top:10px;padding:10px 12px;background:rgba(239,68,68,.1);
+                  border:1px solid rgba(239,68,68,.35);border-radius:8px;font-size:12px;
+                  color:#f87171;line-height:1.5">
+        <b>⚠ Coverage gap:</b> Buckets ${gapDescriptions} are unassigned —
+        players in those price ranges won't appear in any segment.
+        <span style="opacity:.7;display:block;margin-top:3px;font-size:11px">
+          Extend a segment end or add a new segment to cover the full range.
+        </span>
+      </div>`;
+  }
+  c.appendChild(gapEl);
 }
 
 // ─── MAIN ANALYSIS ────────────────────────────────────────────────────────────
@@ -1424,7 +1615,7 @@ function runAnalysis(){
 
       return{seg,payers:segPayers,rev,txns,count:segPayers.length,
         userRev,userTxns,  // for per-user averages
-        rangeStr:sb&&eb?`$${sb.lo}–${eb.isPlus?'∞':'$'+eb.hi}`:'—',
+        rangeStr:sb&&eb?fmtSegRange(sb,eb):'—',
         bucketRange:`#${seg.startBucket}–#${seg.endBucket}`};
     });
   }catch(err){
@@ -1798,13 +1989,252 @@ function onParamChange(){
 
 // ─── TAB ──────────────────────────────────────────────────────────────────────
 function switchTab(name,el){
-  ['dist','charts','users','compare'].forEach(t=>document.getElementById('tab-'+t).style.display='none');
+  ['dist','charts','users','compare','sim'].forEach(t=>document.getElementById('tab-'+t).style.display='none');
   document.getElementById('tab-'+name).style.display='';
   document.querySelectorAll('.rtab').forEach(e=>e.classList.remove('active'));el.classList.add('active');
+  if(name==='sim')runSimulator();
 }
 
 // ─── UTILS ────────────────────────────────────────────────────────────────────
 function fmtK(n){if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1000)return(n/1000).toFixed(1)+'K';return String(n);}
+
+// ─── RANGE FORMATTER ─────────────────────────────────────────────────────────
+// Half-open interval [lo, hi) displayed as "$lo–<$hi".
+// Last (plus) bin or open-ended upper bound shown as "$lo+".
+// Council verdict: never subtract $0.01 (breaks non-integer bins).
+function formatRange(lo, hiOrInfinity, isLast){
+  if(isLast||hiOrInfinity===Infinity)return'$'+lo+'+';
+  return'$'+lo+'–<$'+hiOrInfinity;
+}
+// Convenience: given two bin objects sb (start) and eb (end)
+function fmtSegRange(sb, eb){
+  if(!sb||!eb)return'—';
+  if(sb.isPlus&&eb.isPlus)return'$'+SPEND_CAP+'+';
+  return formatRange(sb.lo, eb.isPlus?Infinity:eb.hi, eb.isPlus);
+}
+
+// ─── COVERAGE VALIDATOR ───────────────────────────────────────────────────────
+// Returns array of gap objects: {fromBucket, toBucket, fromLabel, toLabel}
+// Each gap is a contiguous run of bins not covered by any segment.
+function validateCoverage(bins){
+  const n=bins.length;
+  const covered=new Array(n).fill(false);
+  for(const seg of S.segments){
+    const lo=Math.max(0,seg.startBucket-1);
+    const hi=Math.min(seg.endBucket-1,n-1);
+    for(let i=lo;i<=hi;i++)covered[i]=true;
+  }
+  const gaps=[];
+  let gapStart=-1;
+  for(let i=0;i<=n;i++){
+    const c=i<n?covered[i]:true; // sentinel to close final gap
+    if(!c&&gapStart===-1)gapStart=i;
+    if(c&&gapStart!==-1){
+      const fromBin=bins[gapStart];
+      const toBin=bins[i-1];
+      gaps.push({
+        fromBucket:gapStart+1,
+        toBucket:i,
+        label:fmtSegRange(fromBin,toBin)
+      });
+      gapStart=-1;
+    }
+  }
+  return gaps;
+}
+
+// ─── USER SIMULATOR ──────────────────────────────────────────────────────────
+let SIM_ROWS=[];
+let _simId=0;
+
+function _todayStr(){return new Date().toISOString().slice(0,10);}
+function _fmtSimDate(d){
+  if(!d)return'—';
+  const[y,m,day]=d.split('-');
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${months[parseInt(m)-1]} ${parseInt(day)}, ${y}`;
+}
+
+function addSimRow(){
+  const dateEl=document.getElementById('simDate');
+  const priceEl=document.getElementById('simPrice');
+  const rawPrice=parseFloat(priceEl.value);
+  if(!rawPrice||rawPrice<=0){priceEl.focus();priceEl.style.borderColor='#ef4444';setTimeout(()=>priceEl.style.borderColor='',1000);return;}
+  const date=dateEl.value||_todayStr();
+  SIM_ROWS.push({id:++_simId,date,price:rawPrice});
+  priceEl.value='';priceEl.focus();
+  _renderSimList();runSimulator();
+}
+
+function removeSimRow(id){
+  SIM_ROWS=SIM_ROWS.filter(r=>r.id!==id);
+  _renderSimList();runSimulator();
+}
+
+function clearSim(){
+  SIM_ROWS=[];_renderSimList();runSimulator();
+}
+
+function setSimPrice(p){
+  document.getElementById('simPrice').value=p;
+  document.getElementById('simPrice').focus();
+}
+
+function _renderSimList(){
+  const listWrap=document.getElementById('simList');
+  const listBody=document.getElementById('simListBody');
+  const emptyEl=document.getElementById('simEmpty');
+  const statsEl=document.getElementById('simStats');
+  if(!SIM_ROWS.length){
+    listWrap.style.display='none';
+    emptyEl.style.display='';
+    statsEl.style.display='none';
+    return;
+  }
+  emptyEl.style.display='none';
+  listWrap.style.display='';
+  statsEl.style.display='grid';
+  // Sort newest first
+  const sorted=[...SIM_ROWS].sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
+  listBody.innerHTML=sorted.map(r=>`
+    <div class="sim-row">
+      <span style="color:var(--text2);font-size:12px">${_fmtSimDate(r.date)}</span>
+      <span style="font-weight:700;color:var(--text);padding-right:12px">$${r.price.toFixed(2)}</span>
+      <button onclick="removeSimRow(${r.id})"
+        style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;line-height:1;padding:0 2px;transition:color .1s"
+        onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color=''">×</button>
+    </div>`).join('');
+}
+
+function runSimulator(){
+  // stats
+  if(!SIM_ROWS.length){
+    _simClear();return;
+  }
+  const prices=SIM_ROWS.map(r=>r.price);
+  const sorted=[...prices].sort((a,b)=>a-b);
+  const totalSpend=prices.reduce((s,p)=>s+p,0);
+  const avgPrice=totalSpend/prices.length;
+
+  // days active
+  const dates=SIM_ROWS.map(r=>r.date).filter(Boolean).sort();
+  const daysActive=dates.length>1
+    ?Math.round((new Date(dates[dates.length-1])-new Date(dates[0]))/86400000)+1
+    :1;
+
+  // update stat tiles
+  document.getElementById('simStatCount').textContent=prices.length;
+  document.getElementById('simStatSpend').textContent='$'+totalSpend.toFixed(2);
+  document.getElementById('simStatAvg').textContent='$'+avgPrice.toFixed(2);
+  document.getElementById('simStatDays').textContent=daysActive+' d';
+
+  // percentiles
+  const p25=percentile(sorted,25),p50=percentile(sorted,50),
+        p75=percentile(sorted,75),p90=percentile(sorted,90);
+  const pMap={25:p25,50:p50,75:p75,90:p90};
+  const cp=S.classPercentile;
+  const classPrice=percentile(sorted,cp);
+
+  // Render percentile rows
+  document.getElementById('simPercResult').innerHTML=
+    [25,50,75,90].map(pct=>{
+      const isActive=pct===cp;
+      return`<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 10px;border-radius:8px;margin-bottom:4px;
+                  background:${isActive?'rgba(99,102,241,.1)':'transparent'};
+                  border:1px solid ${isActive?'rgba(99,102,241,.3)':'transparent'}">
+        <span style="font-size:12px;color:${isActive?'#818cf8':'var(--text2)'};font-weight:${isActive?700:400}">
+          P${pct}${isActive?' <span style="font-size:10px;opacity:.7">← classifying</span>':''}
+        </span>
+        <span style="font-weight:700;font-size:14px;color:${isActive?'#818cf8':'var(--text)'}">$${pMap[pct].toFixed(2)}</span>
+      </div>`;
+    }).join('');
+
+  // Find bin
+  const binSize=S.binSize;
+  const bins=computeBinLabels(binSize);
+  const binIdx=classPrice>=SPEND_CAP?bins.length-1:Math.min(Math.floor(classPrice/binSize),bins.length-2);
+  const bucketNum=binIdx+1; // 1-indexed
+  const bin=bins[binIdx];
+
+  // Find segment
+  const seg=S.segments.find(sg=>bucketNum>=sg.startBucket&&bucketNum<=sg.endBucket);
+  const segColor=seg?seg.color:'#94a3b8';
+  const segName=seg?seg.name:'Unassigned';
+
+  // Compute segment range label
+  let segRange='—';
+  if(seg){
+    const sb=bins[Math.min(seg.startBucket-1,bins.length-1)];
+    const eb=bins[Math.min(seg.endBucket-1,bins.length-1)];
+    if(sb&&eb)segRange=fmtSegRange(sb,eb);
+  }
+
+  // Render segment classification
+  document.getElementById('simSegResult').innerHTML=`
+    <div style="text-align:center;padding:10px 4px">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:4px">
+        P${cp} price = <b style="color:var(--text)">$${classPrice.toFixed(2)}</b>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:16px">
+        → Bucket <b style="color:var(--text)">#${bucketNum}</b>
+        <span style="background:var(--surface2);padding:2px 7px;border-radius:10px;margin-left:4px">${bin?bin.label:'?'}</span>
+      </div>
+      <div style="display:inline-flex;flex-direction:column;align-items:center;padding:14px 28px;
+                  border-radius:14px;background:${segColor}18;border:2.5px solid ${segColor};
+                  min-width:160px;margin-bottom:10px">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:${segColor};opacity:.8;margin-bottom:6px">Segment</div>
+        <div style="font-size:26px;font-weight:800;color:${segColor}">${segName}</div>
+        <div style="font-size:11px;color:${segColor};opacity:.7;margin-top:4px">${segRange}</div>
+      </div>
+      ${!seg?`<div style="font-size:11px;color:var(--text3)">⚠️ Not covered by any segment</div>`:''}
+    </div>`;
+
+  // Spectrum bar
+  _renderSimSpectrum(bins,binIdx,seg);
+}
+
+function _renderSimSpectrum(bins,activeBinIdx,activeSeg){
+  const card=document.getElementById('simSpectrumCard');
+  const el=document.getElementById('simSpectrum');
+  if(!bins||!bins.length){card.style.display='none';return;}
+  card.style.display='';
+  const total=bins.length;
+  // Build mini bar
+  const barHtml=bins.map((b,i)=>{
+    const seg=S.segments.find(sg=>(i+1)>=sg.startBucket&&(i+1)<=sg.endBucket);
+    const color=seg?seg.color:'var(--border)';
+    const isActive=i===activeBinIdx;
+    return`<div style="flex:1;height:${isActive?'28px':'18px'};background:${isActive?color:color+'55'};
+                border-radius:3px;position:relative;transition:height .15s;
+                ${isActive?'outline:2px solid '+color+';outline-offset:2px':''}"
+               title="${b.label}${seg?' · '+seg.name:''}">
+      ${isActive?`<div style="position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);
+                               font-size:9px;white-space:nowrap;color:${color};font-weight:700">▲</div>`:''}
+    </div>`;
+  }).join('');
+  el.innerHTML=`
+    <div style="display:flex;gap:2px;align-items:center;height:36px;padding-bottom:4px">${barHtml}</div>
+    <div style="display:flex;justify-content:space-between;margin-top:18px;font-size:10px;color:var(--text3)">
+      <span>$0</span><span>$${SPEND_CAP}+</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
+      ${S.segments.map(sg=>`<span style="font-size:10px;padding:2px 8px;border-radius:10px;
+        background:${sg.color}22;color:${sg.color};border:1px solid ${sg.color}44">${sg.name}</span>`).join('')}
+      <span style="font-size:10px;padding:2px 8px;border-radius:10px;
+        background:var(--surface2);color:var(--text3);border:1px solid var(--border)">Unassigned</span>
+    </div>`;
+}
+
+function _simClear(){
+  document.getElementById('simSegResult').innerHTML=`
+    <div style="text-align:center;padding:16px 8px">
+      <div style="font-size:28px;margin-bottom:8px">👤</div>
+      <div style="font-size:12px;color:var(--text3)">Add purchases to classify this user</div>
+    </div>`;
+  document.getElementById('simPercResult').innerHTML=`
+    <div style="font-size:12px;color:var(--text3);text-align:center;padding:14px">Add purchases to see percentiles</div>`;
+  document.getElementById('simSpectrumCard').style.display='none';
+}
 
 // ─── SAVE / LOAD ─────────────────────────────────────────────────────────────
 function save(){
@@ -1920,5 +2350,5 @@ async function _ghDoPush(label,silent){
     html=html.replace(/
 
 
-<script id="baked-state">try{if(!localStorage.getItem("seg-tool-v1"))localStorage.setItem("seg-tool-v1","{\n  \"activeGame\": \"snacky_dash\",\n  \"lookbackVal\": 30,\n  \"binSize\": 1,\n  \"classPercentile\": 75,\n  \"segments\": [\n    {\n      \"id\": 1,\n      \"name\": \"Low\",\n      \"color\": \"#3b82f6\",\n      \"startBucket\": 1,\n      \"endBucket\": 8\n    },\n    {\n      \"id\": 2,\n      \"name\": \"Mid\",\n      \"color\": \"#10b981\",\n      \"startBucket\": 9,\n      \"endBucket\": 16\n    },\n    {\n      \"id\": 3,\n      \"name\": \"High\",\n      \"color\": \"#f97316\",\n      \"startBucket\": 17,\n      \"endBucket\": 26\n    }\n  ]\n}");}catch(e){}</script>
+<script id="baked-state">try{if(!localStorage.getItem("seg-tool-v1"))localStorage.setItem("seg-tool-v1","{\n  \"activeGame\": \"marble_sort\",\n  \"lookbackVal\": 30,\n  \"binSize\": 1,\n  \"classPercentile\": 75,\n  \"segments\": [\n    {\n      \"id\": 1,\n      \"name\": \"Low\",\n      \"color\": \"#3b82f6\",\n      \"startBucket\": 1,\n      \"endBucket\": 8\n    },\n    {\n      \"id\": 2,\n      \"name\": \"Mid\",\n      \"color\": \"#10b981\",\n      \"startBucket\": 9,\n      \"endBucket\": 16\n    },\n    {\n      \"id\": 3,\n      \"name\": \"High\",\n      \"color\": \"#f97316\",\n      \"startBucket\": 17,\n      \"endBucket\": 26\n    }\n  ]\n}");}catch(e){}</script>
 </body></html>
